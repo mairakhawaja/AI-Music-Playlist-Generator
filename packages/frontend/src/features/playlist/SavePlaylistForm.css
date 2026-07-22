@@ -1,0 +1,50 @@
+.save-playlist-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.save-playlist-form__input {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 150ms ease;
+}
+
+.save-playlist-form__input::placeholder {
+  color: var(--text-muted);
+}
+
+.save-playlist-form__input:focus {
+  border-color: var(--accent-primary);
+}
+
+.save-playlist-form__success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(29, 185, 84, 0.12);
+  color: var(--accent-primary);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.save-playlist-form__success a {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.save-playlist-form__success a:hover {
+  color: var(--accent-primary-hover);
+}
