@@ -1,0 +1,709 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1.1 Initialise the monorepo with a `packages/frontend` and `packages/backend` workspace layout": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745775602
+      },
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745792180
+      },
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784746352656
+      }
+    ],
+    "1.2 Scaffold the backend package (`packages/backend`)": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745775992
+      },
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784746355574
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747573017
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747598311
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784748967259
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749311553
+      }
+    ],
+    "1.3 Scaffold the frontend package (`packages/frontend`)": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745776176
+      },
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784746356242
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747573763
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747601309
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784748970241
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749312267
+      }
+    ],
+    "1.4 Define all shared TypeScript interfaces in `packages/backend/src/lib/types.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745776330
+      },
+      {
+        "executionId": "03aa94f9-4473-4216-8791-a5f3f57f21c3",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747181896
+      },
+      {
+        "executionId": "03aa94f9-4473-4216-8791-a5f3f57f21c3",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747370859
+      }
+    ],
+    "2.1 Implement `lib/secretManager.ts` — load secrets from Secret Manager at startup": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745776492
+      },
+      {
+        "executionId": "03aa94f9-4473-4216-8791-a5f3f57f21c3",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747375069
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747574212
+      },
+      {
+        "executionId": "7e9254a4-85e2-4904-bb21-dbd4282176cc",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784748797831
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749318007
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749321260
+      }
+    ],
+    "2.2 Implement `lib/logger.ts` — structured JSON logger": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745776660
+      },
+      {
+        "executionId": "03aa94f9-4473-4216-8791-a5f3f57f21c3",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747380285
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747574730
+      },
+      {
+        "executionId": "7e9254a4-85e2-4904-bb21-dbd4282176cc",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784748800532
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749324780
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749327968
+      }
+    ],
+    "2.3 Implement `lib/errors.ts` — `AppError` base class and typed subclasses": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745776828
+      },
+      {
+        "executionId": "03aa94f9-4473-4216-8791-a5f3f57f21c3",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747383319
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747575066
+      },
+      {
+        "executionId": "7e9254a4-85e2-4904-bb21-dbd4282176cc",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784748803317
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749331032
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749335941
+      }
+    ],
+    "2.4 Implement `lib/correlationId.ts` and `middleware/correlationId.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745777093
+      },
+      {
+        "executionId": "03aa94f9-4473-4216-8791-a5f3f57f21c3",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747386740
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747575494
+      },
+      {
+        "executionId": "7e9254a4-85e2-4904-bb21-dbd4282176cc",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784748805921
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749339132
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749342307
+      }
+    ],
+    "2.6 Implement `lib/encryption.ts` — AES-GCM encrypt/decrypt for refresh tokens": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745777276
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747576203
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749351298
+      }
+    ],
+    "2.8 Implement `middleware/authenticate.ts` — validate session JWT on protected routes": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745777431
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747576499
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749354211
+      }
+    ],
+    "2.9 Implement `middleware/errorHandler.ts` — global error → structured response": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745777589
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747576904
+      },
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749357503
+      }
+    ],
+    "3.1 Implement `services/authService.ts` — PKCE helpers and session JWT signing": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745777748
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747577170
+      }
+    ],
+    "3.2 Implement `clients/firestoreClient.ts` — typed Firestore Admin SDK wrapper": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745777909
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747577400
+      }
+    ],
+    "3.3 Implement token exchange and refresh in `authService.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745778076
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747577580
+      }
+    ],
+    "3.5 Implement `routes/auth.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745778235
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747577752
+      }
+    ],
+    "3.6 Wire auth routes into `server.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745778388
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747577918
+      }
+    ],
+    "4.1 Implement `clients/spotifyClient.ts` — typed Spotify API wrapper": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745778644
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747578085
+      }
+    ],
+    "4.2 Add retry / back-off decorator to `spotifyClient.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745778825
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747578259
+      }
+    ],
+    "5.1 Implement `services/listeningDataService.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745779126
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747578483
+      }
+    ],
+    "5.2 Implement `services/tasteProfileService.ts` — assemble and validate `TasteProfile`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745779318
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747578655
+      }
+    ],
+    "6.1 Implement `clients/claudeClient.ts` — Anthropic SDK wrapper": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745779478
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747578987
+      }
+    ],
+    "6.2 Implement `services/claudeService.ts` — orchestrate prompt and parse response": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745779648
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747579199
+      }
+    ],
+    "7.1 Implement `services/trackResolutionService.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745779829
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747579439
+      }
+    ],
+    "8.1 Implement `services/generationService.ts` — orchestrate the full pipeline with caching": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745780078
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747579622
+      }
+    ],
+    "8.4 Implement `routes/generate.ts` and `routes/playlists.ts` (read path)": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745780243
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747579801
+      }
+    ],
+    "9. Checkpoint — backend pipeline complete": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745780413
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747580050
+      }
+    ],
+    "10.1 Implement `services/playlistSaveService.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745780578
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747580222
+      }
+    ],
+    "10.4 Implement `POST /api/playlists/save` in `routes/playlists.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745780750
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747580402
+      }
+    ],
+    "11.1 Implement shared UI primitives in `packages/frontend/src/components/ui/`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745780915
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747580584
+      }
+    ],
+    "11.2 Implement `lib/apiClient.ts` — Axios instance with auth header injection": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745781075
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747580750
+      }
+    ],
+    "11.3 Implement `lib/correlationId.ts` (frontend) — reads `X-Correlation-ID` from responses and logs to console": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745781486
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747581111
+      }
+    ],
+    "12.1 Implement `features/auth/authApi.ts`, `useAuth.ts`, `AuthGuard.tsx`, and `AuthCallback.tsx`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745781703
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747581288
+      }
+    ],
+    "12.2 Wire `App.tsx` with React Router routes: `/` (connect screen), `/callback`, `/generate` (protected), `/results` (protected)": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745781858
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747581465
+      }
+    ],
+    "13.1 Implement `features/generator/generatorApi.ts` and `PlaylistSelector.tsx`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745782024
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747581721
+      }
+    ],
+    "13.3 Implement `GenerateButton.tsx` and `GeneratorPage.tsx`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745782214
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747581905
+      }
+    ],
+    "14.1 Implement `features/playlist/TrackCard.tsx` and `TrackToggle.tsx`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745782558
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747582271
+      }
+    ],
+    "14.3 Implement `IncludedCount.tsx` and the track selection Zustand slice": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745783097
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747582451
+      }
+    ],
+    "14.5 Implement `ResultsPage.tsx` — compose track list, count badge, and save form": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745783373
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747582714
+      }
+    ],
+    "15.1 Implement `features/playlist/SavePlaylistForm.tsx` and `playlistApi.ts`": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745783700
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747582956
+      }
+    ],
+    "16. Checkpoint — full UI integration": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745783896
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747583207
+      }
+    ],
+    "17.1 Write integration test for full generation pipeline (backend)": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745784061
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747583340
+      }
+    ],
+    "18.1 Add structured log calls to all remaining backend services and routes": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745784227
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747583543
+      }
+    ],
+    "19.1 Finalise `Dockerfile` and Cloud Run configuration": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745784398
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747583721
+      }
+    ],
+    "19.2 Create `firebase.json` and `.firebaserc` for Firebase Hosting": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745784887
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747583903
+      }
+    ],
+    "19.3 Create GitHub Actions CI/CD workflow (`.github/workflows/deploy.yml`)": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745785063
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747584078
+      }
+    ],
+    "20. Final checkpoint — all tests pass, build clean": [
+      {
+        "executionId": "f19d9147-e8f3-4cfc-aaa9-a8028264f4fe",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784745785241
+      },
+      {
+        "executionId": "4d6dc787-a7d2-43bd-8b6d-b32cc2a09768",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784747584237
+      }
+    ],
+    "1. Project scaffolding — monorepo structure, tooling, and shared types": [
+      {
+        "executionId": "2555c266-982a-48ee-9e66-0ebd44b62aa2",
+        "chatSessionId": "sess_d621478d-e5d3-443e-adf8-27d52da65b24",
+        "timestamp": 1784749312918
+      }
+    ]
+  }
+}

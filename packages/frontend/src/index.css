@@ -1,0 +1,61 @@
+/* ============================================================
+   Design token CSS custom properties
+   Reference: design.md — Color Palette
+   ============================================================ */
+:root {
+  /* Backgrounds */
+  --bg-base: #0d0d0f;
+  --bg-card: #18181c;
+  --bg-card-hover: #1f1f26;
+
+  /* Accent */
+  --accent-primary: #1db954;
+  --accent-primary-hover: #1ed760;
+
+  /* Text */
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #52525b;
+
+  /* Borders & shadows */
+  --border-subtle: #27272a;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.4);
+
+  /* Overlays */
+  --excluded-overlay: rgba(0, 0, 0, 0.55);
+}
+
+/* ============================================================
+   Base reset / global styles
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}

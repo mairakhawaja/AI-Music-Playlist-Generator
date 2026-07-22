@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Music Playlist Generator — Mockup</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0D0D0F;
+      color: #fff;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ── Screen system ── */
+    .screen {
+      position: fixed;
+      inset: 0;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 300ms ease;
+      overflow-y: auto;
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    /* ── Screen indicator dots ── */
+    #dots {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 7px;
+      z-index: 999;
+    }
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #3F3F46;
+      transition: background 300ms ease, transform 300ms ease;
+    }
+    .dot.active {
+      background: #1DB954;
+      transform: scale(1.3);
+    }
+
+    /* ══════════════════════════════
+       SCREEN 1 — LOGIN
+    ══════════════════════════════ */
+    #screen1 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .s1-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .s1-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 60% 40%, #7c3aed, transparent 60%);
+      animation: bgPulse 6s ease-in-out infinite alternate;
+    }
+    @keyframes bgPulse {
+      from { opacity: 0.04; }
+      to   { opacity: 0.09; }
+    }
+
+    .s1-center {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 0;
+    }
+
+    .s1-wordmark {
+      font-size: 48px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .s1-wordmark span.green { color: #1DB954; }
+
+    .s1-tagline {
+      color: #A1A1AA;
+      font-size: 16px;
+      margin-top: 14px;
+      margin-bottom: 36px;
+    }
+
+    .btn-spotify {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #1DB954;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      height: 52px;
+      border-radius: 14px;
+      max-width: 280px;
+      width: 280px;
+      border: none;
+      cursor: pointer;
+      transition: filter 200ms ease, transform 150ms ease;
+    }
+    .btn-spotify:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    .btn-spotify:active { transform: translateY(0); filter: brightness(0.95); }
+
+    .spotify-icon {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    /* ══════════════════════════════
+       SCREEN 2 — GENERATOR
+    ══════════════════════════════ */
+    #screen2 {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .s2-bg-tint {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(124,58,237,0.10), transparent 60%);
+      opacity: 0;
+      transition: opacity 2500ms ease;
+      pointer-events: none;
+    }
+    .s2-bg-tint.show { opacity: 1; }
+
+    /* Top bar */
+    .topbar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+    .avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #1DB954;
+      color: #0D0D0F;
+      font-size: 13px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .topbar-name {
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 10px;
+    }
+    .topbar-logout {
+      margin-left: auto;
+      color: #52525B;
+      font-size: 13px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 150ms;
+    }
+    .topbar-logout:hover { color: #A1A1AA; }
+
+    .s2-body {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      padding: 0 20px 80px;
+    }
+
+    .s2-headline {
+      font-size: 28px;
+      font-weight: 700;
+      color: #fff;
+      text-align: center;
+      margin-top: 48px;
+      letter-spacing: -0.02em;
+    }
+
+    /* Chip row */
+    .chip-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 20px 0 4px;
+      width: 100%;
+      max-width: 640px;
+      scrollbar-width: none;
+    }
+    .chip-row::-webkit-scrollbar { display: none; }
+
+    .chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px 8px 8px;
+      border-radius: 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.08);
+      cursor: pointer;
+      flex-shrink: 0;
+      max-width: 160px;
+      transition: background 150ms, border-color 150ms;
+      position: relative;
+    }
+    .chip:hover { background: rgba(255,255,255,0.10); }
+    .chip.selected { border-bottom: 2px solid #1DB954; }
+
+    .chip-art {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+    .chip-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #A1A1AA;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 150ms;
+    }
+    .chip.selected .chip-label { color: #fff; }
+
+    /* Generate button */
+    .btn-generate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: #1DB954;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      height: 56px;
+      border-radius: 14px;
+      max-width: 320px;
+      width: 100%;
+      border: none;
+      cursor: pointer;
+      margin-top: 32px;
+      transition: filter 200ms ease, transform 150ms ease;
+    }
+    .btn-generate:hover { filter: brightness(1.08); transform: translateY(-1px); }
+    .btn-generate:active { transform: translateY(0); }
+    .btn-generate:disabled { cursor: default; transform: none; filter: none; }
+
+    /* Waveform */
+    .waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 18px;
+    }
+    .wave-bar {
+      width: 3px;
+      height: 100%;
+      background: #fff;
+      border-radius: 2px;
+      transform-origin: center bottom;
+      animation: wave 0.8s ease-in-out infinite;
+    }
+    .wave-bar:nth-child(1) { animation-delay: 0ms; }
+    .wave-bar:nth-child(2) { animation-delay: 150ms; }
+    .wave-bar:nth-child(3) { animation-delay: 300ms; }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.3); }
+      50%       { transform: scaleY(1.0); }
+    }
+
+    /* Stage text */
+    .stage-text {
+      height: 20px;
+      margin-top: 16px;
+      font-size: 13px;
+      color: #A1A1AA;
+      text-align: center;
+      opacity: 0;
+      transition: opacity 300ms ease;
+    }
+    .stage-text.visible { opacity: 1; }
+
+    /* ══════════════════════════════
+       SCREEN 3 — RESULTS
+    ══════════════════════════════ */
+    #screen3 {
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Mosaic bg */
+    .mosaic {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .mosaic-sq {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      border-radius: 20px;
+      filter: blur(70px) saturate(150%);
+      opacity: 0.15;
+    }
+
+    .s3-tint {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 40% -20%, rgba(124,58,237,0.12), transparent 55%);
+    }
+
+    .s3-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: 80px;
+    }
+
+    /* Taste profile */
+    .taste-section {
+      max-width: 680px;
+      width: 100%;
+      margin: 24px auto 0;
+      padding: 0 20px;
+    }
+
+    .taste-label {
+      color: #A1A1AA;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 12px;
+    }
+
+    .taste-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .taste-pill {
+      background: rgba(255,255,255,0.10);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: 999px;
+      padding: 6px 14px;
+      display: inline-flex;
+      opacity: 0;
+      animation: pillIn 350ms ease forwards;
+    }
+    @keyframes pillIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    /* Track list */
+    .track-list {
+      max-width: 680px;
+      width: 100%;
+      margin: 20px auto 0;
+      padding: 0 20px;
+    }
+
+    .track-row {
+      display: flex;
+      align-items: center;
+      height: 58px;
+      padding: 0 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      cursor: pointer;
+      transition: background 200ms ease;
+      border-radius: 6px;
+      opacity: 0;
+      animation: rowIn 350ms ease forwards;
+    }
+    .track-row:last-child { border-bottom: none; }
+    .track-row:hover { background: rgba(255,255,255,0.04); }
+    .track-row:hover .track-ext { opacity: 1; }
+
+    @keyframes rowIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .track-num {
+      width: 24px;
+      flex-shrink: 0;
+      color: #52525B;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Mono', monospace;
+      text-align: right;
+    }
+    .track-art {
+      width: 40px;
+      height: 40px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      margin-left: 12px;
+      transition: filter 200ms ease, opacity 200ms ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .track-text {
+      margin-left: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .track-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color 200ms ease, text-decoration 200ms ease;
+    }
+    .track-meta {
+      font-size: 12px;
+      color: #A1A1AA;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+      transition: opacity 200ms ease;
+    }
+    .track-meta em {
+      color: #52525B;
+      font-style: italic;
+    }
+    .track-ext {
+      font-size: 16px;
+      color: #52525B;
+      margin-left: 8px;
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 150ms ease;
+    }
+
+    /* Excluded state */
+    .track-row.excluded { cursor: pointer; }
+    .track-row.excluded:hover { background: rgba(255,255,255,0.02); }
+    .track-row.excluded .track-title {
+      text-decoration: line-through;
+      color: #3F3F46;
+    }
+    .track-row.excluded .track-meta { opacity: 0.3; }
+    .track-row.excluded .track-art {
+      filter: grayscale(80%);
+      opacity: 0.25;
+    }
+    .track-row.excluded .track-ext { opacity: 0 !important; }
+
+    /* Floating save bar */
+    #save-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(13,13,15,0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      z-index: 100;
+      display: none;
+    }
+    #screen3.active #save-bar { display: block; }
+    .save-bar-inner {
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      max-width: 680px;
+      margin: 0 auto;
+      height: 100%;
+    }
+    .save-count {
+      font-size: 15px;
+      color: #A1A1AA;
+      flex: 1;
+    }
+    .save-count strong {
+      color: #fff;
+      font-weight: 600;
+      display: inline-block;
+      transition: transform 120ms ease;
+    }
+    .save-count strong.bump { transform: scale(1.15); }
+
+    .btn-save {
+      background: #1DB954;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'Inter', sans-serif;
+      height: 40px;
+      border-radius: 999px;
+      padding: 0 20px;
+      border: none;
+      cursor: pointer;
+      transition: filter 200ms ease;
+    }
+    .btn-save:hover { filter: brightness(0.88); }
+  </style>
+
+</head>
+<body>
+
+<!-- Screen dots -->
+<div id="dots">
+  <div class="dot active" data-screen="1"></div>
+  <div class="dot" data-screen="2"></div>
+  <div class="dot" data-screen="3"></div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 1 — LOGIN
+═══════════════════════════════ -->
+<div class="screen active" id="screen1">
+  <div class="s1-bg"></div>
+  <div class="s1-center">
+    <div class="s1-wordmark">AI Music <span class="green">Generator</span></div>
+    <div class="s1-tagline">Discover music that sounds like you.</div>
+    <button class="btn-spotify" id="btn-connect">
+      <svg class="spotify-icon" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="12" fill="#1DB954"/>
+        <path d="M17.25 16.74a.75.75 0 0 1-1.03.25c-2.83-1.73-6.4-2.12-10.6-1.16a.75.75 0 1 1-.34-1.46c4.6-1.05 8.55-.6 11.72 1.34a.75.75 0 0 1 .25 1.03zm1.46-3.25a.94.94 0 0 1-1.3.31C14.29 11.7 10 11.23 6.7 12.2a.94.94 0 0 1-.55-1.8c3.79-1.16 8.5-.6 11.29 1.78a.94.94 0 0 1 .27 1.31zm.12-3.38C15.35 7.7 9.67 7.5 6.36 8.5a1.12 1.12 0 0 1-.66-2.14c3.82-1.17 10.17-.94 14.19 1.54a1.12 1.12 0 0 1-1.06 1.97l-.05-.03z" fill="white"/>
+      </svg>
+      Connect with Spotify
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 2 — GENERATOR
+═══════════════════════════════ -->
+<div class="screen" id="screen2">
+  <div class="s2-bg-tint" id="s2-tint"></div>
+
+  <div class="topbar">
+    <div class="avatar">M</div>
+    <span class="topbar-name">Maira</span>
+    <a class="topbar-logout" id="logout2">logout</a>
+  </div>
+
+  <div class="s2-body">
+    <div class="s2-headline">What do you want to hear?</div>
+
+    <div class="chip-row" id="chip-row"></div>
+
+    <button class="btn-generate" id="btn-generate">
+      <span id="gen-label">Generate Playlist</span>
+    </button>
+
+    <div class="stage-text" id="stage-text"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     SCREEN 3 — RESULTS
+═══════════════════════════════ -->
+<div class="screen" id="screen3">
+  <!-- Mosaic bg -->
+  <div class="mosaic" id="mosaic"></div>
+  <div class="s3-tint"></div>
+
+  <div class="s3-content">
+    <div class="topbar">
+      <div class="avatar">M</div>
+      <span class="topbar-name">Maira</span>
+      <a class="topbar-logout" id="logout3">logout</a>
+    </div>
+
+    <!-- Taste profile -->
+    <div class="taste-section">
+      <div class="taste-label">Your Taste</div>
+      <div class="taste-pills" id="taste-pills"></div>
+    </div>
+
+    <!-- Track list -->
+    <div class="track-list" id="track-list"></div>
+  </div>
+
+  <!-- Floating save bar (inside screen3 for display toggle) -->
+</div>
+
+<!-- Save bar always in DOM, shown via CSS when screen3 active -->
+<div id="save-bar">
+  <div class="save-bar-inner">
+    <div class="save-count">Save <strong id="save-count-num">12</strong> tracks</div>
+    <button class="btn-save">Save to Spotify</button>
+  </div>
+</div>
+
+<script>
+// ── Data ────────────────────────────────────────────────────────────────────
+
+const PLAYLISTS = [
+  { name: 'Bedroom Vibes',      color: '#7c3aed' },
+  { name: 'Late Night Drive',   color: '#0891b2' },
+  { name: 'Study Focus',        color: '#dc2626' },
+  { name: 'Feel Good Hits',     color: '#d97706' },
+  { name: 'Indie Essentials',   color: '#059669' },
+];
+
+const TRACKS = [
+  { title: 'Golden Hour',          artist: 'Kacey Musgraves', reason: 'similar warm indie-pop vibe to your Clairo saves',     color: '#d97706' },
+  { title: 'Motion Sickness',      artist: 'Phoebe Bridgers', reason: 'alt-folk with the melancholy you lean toward',          color: '#7c3aed' },
+  { title: 'Hardline',             artist: 'Julien Baker',    reason: 'raw emotional indie you\'d love',                       color: '#dc2626' },
+  { title: 'Sober',                artist: 'Childish Gambino',reason: 'matches your taste for introspective R&B',              color: '#0891b2' },
+  { title: 'Scott Street',         artist: 'Phoebe Bridgers', reason: 'your Phoebe Bridgers listening patterns suggest this',  color: '#059669' },
+  { title: 'Colorado',             artist: 'Middle Kids',     reason: 'indie rock that fits your 2010s alt patterns',          color: '#db2777' },
+  { title: 'Talking to Myself',    artist: 'Cavetown',        reason: 'bedroom pop matching your short-term listening',        color: '#9333ea' },
+  { title: 'Slow Burn',            artist: 'Kacey Musgraves', reason: 'another warm golden-hour feel',                         color: '#ea580c' },
+  { title: 'Moon Song',            artist: 'Phoebe Bridgers', reason: 'top genre match: dream folk',                           color: '#0284c7' },
+  { title: 'Stick Season',         artist: 'Noah Kahan',      reason: 'indie folk you haven\'t saved yet',                     color: '#16a34a' },
+  { title: 'Someone to Stay',      artist: 'Vancouver Sleep Clinic', reason: 'matches your late-night playlists',              color: '#b45309' },
+  { title: 'Funeral',              artist: 'Phoebe Bridgers', reason: 'core to your indie folk identity',                      color: '#be123c' },
+];
+
+const TASTE_PILLS = ['bedroom pop', 'indie folk', 'dream pop', '2010s alt', 'lo-fi'];
+
+const MOSAIC_COLORS = ['#7c3aed','#0891b2','#dc2626','#d97706','#059669','#db2777','#ea580c','#16a34a','#9333ea','#0284c7','#b45309','#be123c'];
+
+// ── Screen management ────────────────────────────────────────────────────────
+
+let currentScreen = 1;
+
+function goTo(n) {
+  document.getElementById('screen' + currentScreen).classList.remove('active');
+  document.getElementById('screen' + n).classList.add('active');
+  currentScreen = n;
+  document.querySelectorAll('.dot').forEach(d => {
+    d.classList.toggle('active', +d.dataset.screen === n);
+  });
+  if (n === 3) initScreen3();
+}
+
+// ── Screen 1 ─────────────────────────────────────────────────────────────────
+
+document.getElementById('btn-connect').addEventListener('click', () => goTo(2));
+
+// ── Screen 2 ─────────────────────────────────────────────────────────────────
+
+// Build chips
+const chipRow = document.getElementById('chip-row');
+PLAYLISTS.forEach((pl, i) => {
+  const chip = document.createElement('div');
+  chip.className = 'chip' + (i < 2 ? ' selected' : '');
+  chip.innerHTML = `
+    <div class="chip-art" style="background:${pl.color}"></div>
+    <span class="chip-label">${pl.name}</span>
+  `;
+  chip.addEventListener('click', () => chip.classList.toggle('selected'));
+  chipRow.appendChild(chip);
+});
+
+// Generate button
+let generating = false;
+const btnGenerate = document.getElementById('btn-generate');
+const genLabel   = document.getElementById('gen-label');
+const stageText  = document.getElementById('stage-text');
+const s2Tint     = document.getElementById('s2-tint');
+
+const STAGES = [
+  { ms: 0,    text: '≋  Reading your taste...' },
+  { ms: 800,  text: '≋  Asking Claude...' },
+  { ms: 1600, text: '≋  Finding tracks...' },
+];
+
+btnGenerate.addEventListener('click', () => {
+  if (generating) return;
+  generating = true;
+  btnGenerate.disabled = true;
+
+  // Replace label with waveform + text
+  genLabel.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="waveform">
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+        <div class="wave-bar"></div>
+      </div>
+      <span style="font-size:15px;font-weight:500;">Generating...</span>
+    </div>
+  `;
+
+  // Show tint
+  s2Tint.classList.add('show');
+
+  // Staged text
+  let stageIndex = 0;
+  function showStage() {
+    stageText.classList.remove('visible');
+    setTimeout(() => {
+      stageText.textContent = STAGES[stageIndex].text;
+      stageText.classList.add('visible');
+    }, 300);
+  }
+  showStage();
+
+  STAGES.slice(1).forEach((s, i) => {
+    setTimeout(() => {
+      stageIndex = i + 1;
+      showStage();
+    }, s.ms);
+  });
+
+  // Navigate after 2.5s
+  setTimeout(() => {
+    stageText.classList.remove('visible');
+    setTimeout(() => {
+      goTo(3);
+      // Reset for re-visit
+      generating = false;
+      btnGenerate.disabled = false;
+      genLabel.innerHTML = 'Generate Playlist';
+      stageText.textContent = '';
+      s2Tint.classList.remove('show');
+    }, 300);
+  }, 2500);
+});
+
+document.getElementById('logout2').addEventListener('click', () => goTo(1));
+
+// ── Screen 3 ─────────────────────────────────────────────────────────────────
+
+let screen3Inited = false;
+let included; // Set of included track indices
+
+function initScreen3() {
+  // Always reset animations on each visit
+  buildMosaic();
+  buildTaste();
+  buildTracks();
+}
+
+function buildMosaic() {
+  const mosaic = document.getElementById('mosaic');
+  mosaic.innerHTML = '';
+  MOSAIC_COLORS.forEach((c, i) => {
+    const sq = document.createElement('div');
+    sq.className = 'mosaic-sq';
+    sq.style.background = c;
+    // Scatter randomly but deterministically
+    const positions = [
+      [5,  8], [30, 5], [60,  2], [82,  8], [15, 45],
+      [70, 40],[40, 70],[85, 60], [10, 75], [55, 80],
+      [90, 20],[45, 30]
+    ];
+    sq.style.left = positions[i][0] + '%';
+    sq.style.top  = positions[i][1] + '%';
+    mosaic.appendChild(sq);
+  });
+}
+
+function buildTaste() {
+  const container = document.getElementById('taste-pills');
+  container.innerHTML = '';
+  TASTE_PILLS.forEach((p, i) => {
+    const pill = document.createElement('span');
+    pill.className = 'taste-pill';
+    pill.textContent = p;
+    pill.style.animationDelay = (i * 80) + 'ms';
+    container.appendChild(pill);
+  });
+}
+
+function buildTracks() {
+  const list = document.getElementById('track-list');
+  list.innerHTML = '';
+  included = new Set(TRACKS.map((_, i) => i));
+  updateSaveCount();
+
+  const baseDelay = TASTE_PILLS.length * 80 + 200; // after pills finish
+
+  TRACKS.forEach((t, i) => {
+    const row = document.createElement('div');
+    row.className = 'track-row';
+    row.style.animationDelay = (baseDelay + i * 60) + 'ms';
+    row.innerHTML = `
+      <div class="track-num">${String(i + 1).padStart(2, '\u2007')}</div>
+      <div class="track-art" style="background:${t.color}">♪</div>
+      <div class="track-text">
+        <div class="track-title">${t.title}</div>
+        <div class="track-meta">${t.artist} &middot; <em>${t.reason}</em></div>
+      </div>
+      <div class="track-ext">↗</div>
+    `;
+
+    row.addEventListener('click', (e) => {
+      // Prevent ext link click from toggling (not really a link, but future-proof)
+      if (included.has(i)) {
+        included.delete(i);
+        row.classList.add('excluded');
+      } else {
+        included.add(i);
+        row.classList.remove('excluded');
+      }
+      updateSaveCount();
+    });
+
+    list.appendChild(row);
+  });
+}
+
+function updateSaveCount() {
+  const numEl = document.getElementById('save-count-num');
+  numEl.textContent = included.size;
+  // Bump animation
+  numEl.classList.remove('bump');
+  // Force reflow to restart animation
+  void numEl.offsetWidth;
+  numEl.classList.add('bump');
+  setTimeout(() => numEl.classList.remove('bump'), 150);
+}
+
+document.getElementById('logout3').addEventListener('click', () => goTo(1));
+
+// ── Dot navigation (click to jump screens) ──────────────────────────────────
+document.querySelectorAll('.dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const n = +dot.dataset.screen;
+    if (n !== currentScreen) goTo(n);
+  });
+});
+</script>
+</body>
+</html>
