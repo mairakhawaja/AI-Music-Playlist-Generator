@@ -15,6 +15,8 @@ import cookieParser from 'cookie-parser';
 import correlationIdMiddleware from './middleware/correlationId.js';
 import { logger } from './lib/logger.js';
 import authRouter from './routes/auth.js';
+import generateRouter from './routes/generate.js';
+import playlistsRouter from './routes/playlists.js';
 
 // ── App factory ──────────────────────────────────────────────────────────────
 
@@ -39,6 +41,8 @@ function createApp(): express.Application {
   // ── API routes ─────────────────────────────────────────────────────────────
   // Route modules are mounted here as they are implemented in subsequent tasks.
   app.use('/api/auth', authRouter);
+  app.use('/api/generate', generateRouter);
+  app.use('/api/playlists', playlistsRouter);
 
   return app;
 }
