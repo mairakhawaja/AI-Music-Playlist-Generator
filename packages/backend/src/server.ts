@@ -11,8 +11,10 @@
  */
 
 import express from 'express';
+import cookieParser from 'cookie-parser';
 import correlationIdMiddleware from './middleware/correlationId.js';
 import { logger } from './lib/logger.js';
+import authRouter from './routes/auth.js';
 
 // ── App factory ──────────────────────────────────────────────────────────────
 
@@ -21,6 +23,9 @@ function createApp(): express.Application {
 
   // Parse JSON request bodies
   app.use(express.json());
+
+  // Parse cookies (needed for session JWT in HttpOnly cookie)
+  app.use(cookieParser());
 
   // Attach a UUID v4 correlation ID to every request and response header
   app.use(correlationIdMiddleware);
@@ -33,9 +38,7 @@ function createApp(): express.Application {
 
   // ── API routes ─────────────────────────────────────────────────────────────
   // Route modules are mounted here as they are implemented in subsequent tasks.
-  // Example (uncomment when route files exist):
-  //   import authRouter from './routes/auth.js';
-  //   app.use('/api/auth', authRouter);
+  app.use('/api/auth', authRouter);
 
   return app;
 }
