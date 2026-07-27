@@ -16,6 +16,7 @@ vi.mock('@google-cloud/secret-manager', () => {
 // Import after the mock is set up
 import {
   loadSecrets,
+  loadSecretsFromEnv,
   getSecret,
   _clearSecretCacheForTesting,
   type SecretName,
@@ -61,15 +62,23 @@ function setupSuccessfulSecrets(overrides: Partial<Record<SecretName, string>> =
 // ---------------------------------------------------------------------------
 
 describe('secretManager', () => {
+  const originalNodeEnv = process.env['NODE_ENV'];
+
   beforeEach(() => {
     _clearSecretCacheForTesting();
     vi.clearAllMocks();
     process.env['GOOGLE_CLOUD_PROJECT'] = 'test-project';
+    process.env['NODE_ENV'] = 'production';
   });
 
   afterEach(() => {
     delete process.env['GOOGLE_CLOUD_PROJECT'];
     delete process.env['GCP_PROJECT_ID'];
+    if (originalNodeEnv !== undefined) {
+      process.env['NODE_ENV'] = originalNodeEnv;
+    } else {
+      delete process.env['NODE_ENV'];
+    }
     _clearSecretCacheForTesting();
   });
 
@@ -214,5 +223,72 @@ describe('secretManager', () => {
 
     // All four values should be the same string
     expect(getSecret('CLAUDE_API_KEY')).toBe('string-secret-value');
+  });
+
+  // -------------------------------------------------------------------------
+  // loadSecretsFromEnv — local development path
+  // -------------------------------------------------------------------------
+
+  it('loadSecretsFromEnv loads secrets from environment variables', () => {
+    process.env['SPOTIFY_CLIENT_SECRET'] = 'env-spotify';
+    process.env['CLAUDE_API_KEY'] = 'env-claude';
+    process.env['JWT_SIGNING_KEY'] = 'env-jwt';
+    process.env['REFRESH_TOKEN_ENCRYPTION_KEY'] = 'env-encryption';
+
+    loadSecretsFromEnv();
+
+    expect(getSecret('SPOTIFY_CLIENT_SECRET')).toBe('env-spotify');
+    expect(getSecret('CLAUDE_API_KEY')).toBe('env-claude');
+    expect(getSecret('JWT_SIGNING_KEY')).toBe('env-jwt');
+    expect(getSecret('REFRESH_TOKEN_ENCRYPTION_KEY')).toBe('env-encryption');
+
+    delete process.env['SPOTIFY_CLIENT_SECRET'];
+    delete process.env['CLAUDE_API_KEY'];
+    delete process.env['JWT_SIGNING_KEY'];
+    delete process.env['REFRESH_TOKEN_ENCRYPTION_KEY'];
+  });
+
+  it('loadSecretsFromEnv trims whitespace from values', () => {
+    process.env['SPOTIFY_CLIENT_SECRET'] = '  trimmed  ';
+    process.env['CLAUDE_API_KEY'] = 'env-claude';
+    process.env['JWT_SIGNING_KEY'] = 'env-jwt';
+    process.env['REFRESH_TOKEN_ENCRYPTION_KEY'] = 'env-encryption';
+
+    loadSecretsFromEnv();
+
+    expect(getSecret('SPOTIFY_CLIENT_SECRET')).toBe('trimmed');
+
+    delete process.env['SPOTIFY_CLIENT_SECRET'];
+    delete process.env['CLAUDE_API_KEY'];
+    delete process.env['JWT_SIGNING_KEY'];
+    delete process.env['REFRESH_TOKEN_ENCRYPTION_KEY'];
+  });
+
+  it('loadSecretsFromEnv throws when env vars are missing', () => {
+    delete process.env['SPOTIFY_CLIENT_SECRET'];
+    delete process.env['CLAUDE_API_KEY'];
+    delete process.env['JWT_SIGNING_KEY'];
+    delete process.env['REFRESH_TOKEN_ENCRYPTION_KEY'];
+
+    expect(() => loadSecretsFromEnv()).toThrow(/Missing required environment variables/);
+  });
+
+  it('loadSecrets delegates to loadSecretsFromEnv when NODE_ENV is not production', async () => {
+    process.env['NODE_ENV'] = 'development';
+    process.env['SPOTIFY_CLIENT_SECRET'] = 'dev-spotify';
+    process.env['CLAUDE_API_KEY'] = 'dev-claude';
+    process.env['JWT_SIGNING_KEY'] = 'dev-jwt';
+    process.env['REFRESH_TOKEN_ENCRYPTION_KEY'] = 'dev-encryption';
+
+    await loadSecrets();
+
+    expect(getSecret('SPOTIFY_CLIENT_SECRET')).toBe('dev-spotify');
+    // Should NOT have called GCP Secret Manager
+    expect(mockAccessSecretVersion).not.toHaveBeenCalled();
+
+    delete process.env['SPOTIFY_CLIENT_SECRET'];
+    delete process.env['CLAUDE_API_KEY'];
+    delete process.env['JWT_SIGNING_KEY'];
+    delete process.env['REFRESH_TOKEN_ENCRYPTION_KEY'];
   });
 });

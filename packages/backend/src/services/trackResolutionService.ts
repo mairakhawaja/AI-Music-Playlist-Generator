@@ -163,6 +163,7 @@ export async function resolveAll(
   spotifyClient: SpotifyClient,
   tokenCtx: SpotifyTokenContext,
   correlationId: string,
+  spotifyUserId?: string,
 ): Promise<ResolveAllResult> {
   const startTime = Date.now();
   const resolved: ResolvedTrack[] = [];
@@ -186,8 +187,11 @@ export async function resolveAll(
     `Track resolution complete: ${resolved.length} tracks resolved from ${candidates.length} candidates`,
     {
       correlationId,
+      ...(spotifyUserId ? { spotifyUserId } : {}),
       step: 'TRACK_RESOLUTION',
       durationMs,
+      resolvedCount: resolved.length,
+      candidateCount: candidates.length,
     },
   );
 
@@ -196,6 +200,7 @@ export async function resolveAll(
       `Partial results: only ${resolved.length} tracks resolved (threshold: ${PARTIAL_WARNING_THRESHOLD})`,
       {
         correlationId,
+        ...(spotifyUserId ? { spotifyUserId } : {}),
         step: 'TRACK_RESOLUTION',
       },
     );

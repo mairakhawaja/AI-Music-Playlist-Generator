@@ -33,7 +33,7 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Export each interface; import in service stubs created later
     - _Requirements: 3.2, 4.2, 5.5_
 
-- [ ] 2. Backend foundation — secrets, logger, errors, correlation ID, encryption
+- [x] 2. Backend foundation — secrets, logger, errors, correlation ID, encryption
   - [x] 2.1 Implement `lib/secretManager.ts` — load secrets from Secret Manager at startup
     - Fetch `SPOTIFY_CLIENT_SECRET`, `CLAUDE_API_KEY`, `JWT_SIGNING_KEY`, `REFRESH_TOKEN_ENCRYPTION_KEY` at process start; cache in memory; export typed accessor
     - Fail fast with a clear error if any secret is missing
@@ -53,7 +53,7 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - **Validates: Requirements 10.3**
     - Use fast-check to generate random request payloads; assert every log entry and the response header carry the same correlation ID
     - _Test file: `packages/backend/src/lib/correlationId.test.ts`_
-  - [-] 2.6 Implement `lib/encryption.ts` — AES-GCM encrypt/decrypt for refresh tokens
+  - [x] 2.6 Implement `lib/encryption.ts` — AES-GCM encrypt/decrypt for refresh tokens
     - `encrypt(plaintext: string, key: Buffer): string` (base64 output); `decrypt(ciphertext: string, key: Buffer): string`
     - Use Node.js `crypto` module; 96-bit random IV prepended to ciphertext
     - _Requirements: 1.4, 9.3_
@@ -62,22 +62,22 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - **Validates: Requirements 1.4**
     - Use fast-check `fc.string()` arbitrary; assert `decrypt(encrypt(token, key), key) === token` for all inputs
     - _Test file: `packages/backend/src/lib/encryption.test.ts`_
-  - [-] 2.8 Implement `middleware/authenticate.ts` — validate session JWT on protected routes
+  - [x] 2.8 Implement `middleware/authenticate.ts` — validate session JWT on protected routes
     - Verify HS256 JWT; populate `req.user: SessionPayload`; return 401 on failure
     - _Requirements: 1.5, 1.6_
-  - [-] 2.9 Implement `middleware/errorHandler.ts` — global error → structured response
+  - [x] 2.9 Implement `middleware/errorHandler.ts` — global error → structured response
     - Map `AppError` subclasses to HTTP status; return `{ error: { code, message, correlationId } }`; no stack traces
     - _Requirements: 10.2_
 
-- [ ] 3. Spotify OAuth 2.0 PKCE round-trip
-  - [ ] 3.1 Implement `services/authService.ts` — PKCE helpers and session JWT signing
+- [x] 3. Spotify OAuth 2.0 PKCE round-trip
+  - [x] 3.1 Implement `services/authService.ts` — PKCE helpers and session JWT signing
     - `generatePkce()`: 96-char URL-safe random `code_verifier`, SHA-256 `code_challenge`; `generateState()`: 16-byte hex
     - `signSessionJwt(payload: SessionPayload): string`; `verifySessionJwt(token: string): SessionPayload`
     - _Requirements: 1.1, 1.2_
-  - [ ] 3.2 Implement `clients/firestoreClient.ts` — typed Firestore Admin SDK wrapper
+  - [x] 3.2 Implement `clients/firestoreClient.ts` — typed Firestore Admin SDK wrapper
     - Initialise Admin SDK; export typed helpers: `getUser`, `upsertUser`, `savePkceState`, `getPkceState`, `deletePkceState`
     - _Requirements: 1.4, 1.7_
-  - [ ] 3.3 Implement token exchange and refresh in `authService.ts`
+  - [x] 3.3 Implement token exchange and refresh in `authService.ts`
     - `exchangeCode(code, verifier)`: POST to Spotify token endpoint; returns `{ accessToken, refreshToken, expiresIn }`
     - `refreshAccessToken(encryptedRefreshToken)`: decrypt → POST → return new `accessToken`
     - Encrypt refresh token with `encryption.ts` before writing; upsert Firestore user doc with `displayName`, `encryptedRefreshToken`, `createdAt`
@@ -87,13 +87,13 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - **Validates: Requirements 1.7**
     - Use fast-check `fc.string()` for userId/displayName; mock Firestore; assert written doc always has `displayName` and `createdAt`
     - _Test file: `packages/backend/src/services/authService.test.ts`_
-  - [ ] 3.5 Implement `routes/auth.ts`
+  - [x] 3.5 Implement `routes/auth.ts`
     - `GET /api/auth/login`: generate PKCE + state, persist `pkceStates/{state}` in Firestore, return `{ authorizeUrl, state }`
     - `GET /api/auth/callback?code=&state=`: verify state, exchange code, set HttpOnly JWT cookie, return `{ displayName }`
     - `POST /api/auth/logout`: clear cookie
     - `GET /api/auth/me` (auth-protected): return `{ spotifyUserId, displayName }` from JWT
     - _Requirements: 1.1, 1.2, 1.3, 1.6_
-  - [ ] 3.6 Wire auth routes into `server.ts`
+  - [x] 3.6 Wire auth routes into `server.ts`
     - Initialise Express app; mount `correlationId` middleware; mount `auth` router; mount `errorHandler`
     - Load secrets via `secretManager.ts` before listening
     - _Requirements: 9.1, 9.2_
@@ -104,13 +104,13 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Test session expiry returns 401 on protected route
     - _Test file: `packages/backend/src/routes/auth.test.ts`_
 
-- [ ] 4. Spotify API client with retry / back-off
-  - [ ] 4.1 Implement `clients/spotifyClient.ts` — typed Spotify API wrapper
+- [x] 4. Spotify API client with retry / back-off
+  - [x] 4.1 Implement `clients/spotifyClient.ts` — typed Spotify API wrapper
     - Axios instance targeting `https://api.spotify.com/v1`
     - Methods: `getTopTracks(range)`, `getTopArtists(range)`, `getRecentlyPlayed()`, `getPlaylistTracks(id)`, `getArtists(ids[])`, `searchTracks(query)`, `checkLibrary(ids[])`, `getUserPlaylists()`, `createPlaylist(userId, name)`, `addTracksToPlaylist(id, uris[])`
     - Transparent token refresh on 401 using `authService.refreshAccessToken`
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
-  - [ ] 4.2 Add retry / back-off decorator to `spotifyClient.ts`
+  - [x] 4.2 Add retry / back-off decorator to `spotifyClient.ts`
     - 429: sleep `Retry-After` seconds, retry once
     - 5xx: retry up to 3 times (1 s, 2 s, 4 s delays); throw `SpotifyApiError` after exhaustion
     - _Requirements: 2.6, 2.7_
@@ -120,12 +120,12 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Use fast-check to generate sequences of 1–3 consecutive 5xx responses; assert total attempts ≤ 4
     - _Test file: `packages/backend/src/clients/spotifyClient.test.ts`_
 
-- [ ] 5. Listening data retrieval and taste profile assembly
-  - [ ] 5.1 Implement `services/listeningDataService.ts`
+- [x] 5. Listening data retrieval and taste profile assembly
+  - [x] 5.1 Implement `services/listeningDataService.ts`
     - `fetchAllListeningData(userId, playlistIds[])`: call `spotifyClient` for top tracks × 3 ranges, top artists × 3 ranges, recently played, playlist tracks (if any), batch artist objects for genres
     - Return raw data object; log each fetch step with `durationMs`
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 10.1_
-  - [ ] 5.2 Implement `services/tasteProfileService.ts` — assemble and validate `TasteProfile`
+  - [x] 5.2 Implement `services/tasteProfileService.ts` — assemble and validate `TasteProfile`
     - `rankGenres(artists[])`: aggregate genres, sort descending by count
     - `assembleTasteProfile(rawData)`: populate all four required fields; enforce size limits (50 tracks, 20 artists, 50 recent)
     - _Requirements: 3.1, 3.2, 3.3, 3.4_
@@ -145,12 +145,12 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Use fast-check to generate oversized listening data; assert assembled profile never exceeds 50 top tracks, 20 top artists, 50 recently played
     - _Test file: `packages/backend/src/services/tasteProfileService.test.ts`_
 
-- [ ] 6. Claude integration — candidate list generation
-  - [ ] 6.1 Implement `clients/claudeClient.ts` — Anthropic SDK wrapper
+- [x] 6. Claude integration — candidate list generation
+  - [x] 6.1 Implement `clients/claudeClient.ts` — Anthropic SDK wrapper
     - Initialise `@anthropic-ai/sdk` with key from `secretManager`
     - Single method `requestRecommendations(tasteProfile: TasteProfile): Promise<CandidateList>` using tool-use call with `recommend_tracks` tool schema matching `CandidateList`
     - _Requirements: 4.1, 4.5_
-  - [ ] 6.2 Implement `services/claudeService.ts` — orchestrate prompt and parse response
+  - [x] 6.2 Implement `services/claudeService.ts` — orchestrate prompt and parse response
     - Build prompt instructing Claude to recommend ~30 tracks the user is unlikely to have heard; include full `TasteProfile` JSON
     - Parse and validate tool-use result against `CandidateList` schema; retry once on malformed response; throw `ClaudeApiError` if still invalid
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
@@ -163,8 +163,8 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Mock Anthropic SDK to return malformed JSON on first call, valid on second; assert exactly 2 calls made and valid result returned
     - _Test file: `packages/backend/src/services/claudeService.test.ts`_
 
-- [ ] 7. Track resolution — search, dedup, and library filter
-  - [ ] 7.1 Implement `services/trackResolutionService.ts`
+- [x] 7. Track resolution — search, dedup, and library filter
+  - [x] 7.1 Implement `services/trackResolutionService.ts`
     - `resolveTrack(candidate: CandidateTrack, userId)`: search Spotify, pick first result with close artist+title match, check library; return `ResolvedTrack` or `null`
     - `resolveAll(candidates, userId)`: iterate, filter nulls, enforce ≤ 25 limit, set `partialWarning` if < 5 remain
     - Attach `reason` from `CandidateTrack` to each `ResolvedTrack`
@@ -185,8 +185,8 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Use fast-check to generate resolution outcomes with 0–25 resolved tracks; assert `partialWarning === true` iff count < 5
     - _Test file: `packages/backend/src/services/trackResolutionService.test.ts`_
 
-- [ ] 8. Generation service, caching, and backend generate route
-  - [ ] 8.1 Implement `services/generationService.ts` — orchestrate the full pipeline with caching
+- [x] 8. Generation service, caching, and backend generate route
+  - [x] 8.1 Implement `services/generationService.ts` — orchestrate the full pipeline with caching
     - `generate(userId, playlistIds[])`: compute SHA-256 cache key from `{ userId, sortedPlaylistIds }`, check Firestore for non-stale entry, return cached result if hit
     - On miss: call `listeningDataService` → `tasteProfileService` → store profile → `claudeService` → store candidates → `trackResolutionService` → store URIs → return `GenerationResult`
     - Mark entry stale after 24 h; store `isStale: true` on read if `createdAt + 24h < now`
@@ -200,18 +200,18 @@ Property-based tests use **fast-check** and are co-located with the implementati
   - [ ]* 8.3 Write unit test for cache staleness (24-hour TTL boundary)
     - Simulate `createdAt` = 25 hours ago; assert a fresh generation is triggered
     - _Test file: `packages/backend/src/services/generationService.test.ts`_
-  - [ ] 8.4 Implement `routes/generate.ts` and `routes/playlists.ts` (read path)
+  - [x] 8.4 Implement `routes/generate.ts` and `routes/playlists.ts` (read path)
     - `POST /api/generate`: validate body, call `generationService.generate`, return `GenerationResult`
     - `GET /api/playlists`: proxy `spotifyClient.getUserPlaylists()` to frontend
     - Mount both routes in `server.ts` behind `authenticate` middleware
     - _Requirements: 8.1, 11.1_
 
-- [ ] 9. Checkpoint — backend pipeline complete
+- [x] 9. Checkpoint — backend pipeline complete
   - Ensure all backend tests pass (`npx vitest run` in `packages/backend`), ask the user if questions arise.
 
 
-- [ ] 10. Save-to-Spotify backend service and route
-  - [ ] 10.1 Implement `services/playlistSaveService.ts`
+- [x] 10. Save-to-Spotify backend service and route
+  - [x] 10.1 Implement `services/playlistSaveService.ts`
     - `buildDefaultName(date: Date): string`: return `"AI Music Generator — YYYY-MM-DD"` (ISO 8601)
     - `savePlaylist(userId, generationId, includedUris[], playlistName?)`: create private playlist via `spotifyClient.createPlaylist`, add tracks, update Firestore generation doc with `savedPlaylistId`
     - _Requirements: 7.1, 7.2, 7.3, 7.6_
@@ -223,12 +223,12 @@ Property-based tests use **fast-check** and are co-located with the implementati
   - [ ]* 10.3 Write unit test for playlist save failure path
     - Mock `spotifyClient.createPlaylist` to throw; assert 502 response returned and Firestore doc not updated
     - _Test file: `packages/backend/src/services/playlistSaveService.test.ts`_
-  - [ ] 10.4 Implement `POST /api/playlists/save` in `routes/playlists.ts`
+  - [x] 10.4 Implement `POST /api/playlists/save` in `routes/playlists.ts`
     - Validate `{ generationId, includedTrackUris, playlistName? }` body; call `playlistSaveService.savePlaylist`; return `{ playlistId, playlistUrl }`
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5_
 
-- [ ] 11. Frontend — shared UI components and API client
-  - [ ] 11.1 Implement shared UI primitives in `packages/frontend/src/components/ui/`
+- [x] 11. Frontend — shared UI components and API client
+  - [x] 11.1 Implement shared UI primitives in `packages/frontend/src/components/ui/`
     - `Button.tsx` (primary / ghost variants, disabled state, loading spinner slot)
     - `Card.tsx` (rounded 16px, shadow, dark bg per design tokens)
     - `PillBadge.tsx` (genre / reason pill)
@@ -236,24 +236,24 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - `ErrorBanner.tsx` (human-readable message + correlation ID display)
     - Apply CSS variable tokens from `index.css`
     - _Requirements: 6.5, 6.6, 10.4_
-  - [ ] 11.2 Implement `lib/apiClient.ts` — Axios instance with auth header injection
+  - [x] 11.2 Implement `lib/apiClient.ts` — Axios instance with auth header injection
     - Base URL from `VITE_API_BASE_URL` env var; attach session cookie (withCredentials); extract `X-Correlation-ID` from responses; dispatch errors to error state
     - _Requirements: 9.4, 10.4_
-  - [ ] 11.3 Implement `lib/correlationId.ts` (frontend) — reads `X-Correlation-ID` from responses and logs to console
+  - [x] 11.3 Implement `lib/correlationId.ts` (frontend) — reads `X-Correlation-ID` from responses and logs to console
     - _Requirements: 10.4_
 
-- [ ] 12. Frontend — authentication feature
-  - [ ] 12.1 Implement `features/auth/authApi.ts`, `useAuth.ts`, `AuthGuard.tsx`, and `AuthCallback.tsx`
+- [x] 12. Frontend — authentication feature
+  - [x] 12.1 Implement `features/auth/authApi.ts`, `useAuth.ts`, `AuthGuard.tsx`, and `AuthCallback.tsx`
     - `authApi.ts`: `login()` → GET `/api/auth/login` then redirect; `logout()` → POST `/api/auth/logout`; `getMe()` → GET `/api/auth/me`
     - `useAuth.ts`: Zustand slice holding `{ spotifyUserId, displayName, isAuthenticated }`; initialise on mount via `getMe()`
     - `AuthGuard.tsx`: wraps protected routes; redirects to login if not authenticated
     - `AuthCallback.tsx`: handles `/callback` route; calls `GET /api/auth/callback` forwarding query params; on success navigates to `/generate`
     - _Requirements: 1.1, 1.2, 1.3_
-  - [ ] 12.2 Wire `App.tsx` with React Router routes: `/` (connect screen), `/callback`, `/generate` (protected), `/results` (protected)
+  - [x] 12.2 Wire `App.tsx` with React Router routes: `/` (connect screen), `/callback`, `/generate` (protected), `/results` (protected)
     - _Requirements: 1.1_
 
-- [ ] 13. Frontend — playlist selector and generate screen
-  - [ ] 13.1 Implement `features/generator/generatorApi.ts` and `PlaylistSelector.tsx`
+- [x] 13. Frontend — playlist selector and generate screen
+  - [x] 13.1 Implement `features/generator/generatorApi.ts` and `PlaylistSelector.tsx`
     - `generatorApi.ts`: `getPlaylists()` → GET `/api/playlists`; `generate(playlistIds[])` → POST `/api/generate`
     - `PlaylistSelector.tsx`: responsive grid of playlist cards; selected state with Spotify-green border; fetch on mount; expose `selectedIds` via controlled props
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
@@ -262,13 +262,13 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - **Validates: Requirements 8.4**
     - Use fast-check to generate `SpotifyPlaylist` objects; render with `@testing-library/react`; assert name always present and image URL present when non-null
     - _Test file: `packages/frontend/src/features/generator/PlaylistSelector.test.tsx`_
-  - [ ] 13.3 Implement `GenerateButton.tsx` and `GeneratorPage.tsx`
+  - [x] 13.3 Implement `GenerateButton.tsx` and `GeneratorPage.tsx`
     - `GenerateButton.tsx`: full-width on mobile, centered on desktop; loading spinner; disabled state per design spec
     - `GeneratorPage.tsx`: compose `PlaylistSelector` + `GenerateButton`; on click call `generate()`, navigate to `/results` on success; show `ErrorBanner` on failure
     - _Requirements: 6.5, 6.6_
 
-- [ ] 14. Frontend — results display, track toggles, and track selection count
-  - [ ] 14.1 Implement `features/playlist/TrackCard.tsx` and `TrackToggle.tsx`
+- [x] 14. Frontend — results display, track toggles, and track selection count
+  - [x] 14.1 Implement `features/playlist/TrackCard.tsx` and `TrackToggle.tsx`
     - `TrackCard.tsx`: 72×72 album art (left), title + artist + reason (right), toggle (top-right), Spotify link, hover scale animation; excluded state: dim overlay + muted text per design spec
     - `TrackToggle.tsx`: spring scale animation on click; visual colour change for excluded state
     - _Requirements: 6.1, 6.2, 6.3_
@@ -277,7 +277,7 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - **Validates: Requirements 6.1**
     - Use fast-check to generate `ResolvedTrack` objects; render `TrackCard`; assert album art URL, title, artist, reason, and Spotify URL are all present in output
     - _Test file: `packages/frontend/src/features/playlist/TrackCard.test.tsx`_
-  - [ ] 14.3 Implement `IncludedCount.tsx` and the track selection Zustand slice
+  - [x] 14.3 Implement `IncludedCount.tsx` and the track selection Zustand slice
     - Selection slice: `TrackUIState[]`, `toggleTrack(trackId)`, `includedCount` derived selector
     - `IncludedCount.tsx`: pill badge with animated counter; updates in real time on toggle
     - _Requirements: 6.2, 6.4_
@@ -286,12 +286,12 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - **Validates: Requirements 6.2, 6.4**
     - Use fast-check `fc.array(fc.record({ included: fc.boolean() }))` to generate `TrackUIState[]` arrays; assert `includedCount === tracks.filter(t => t.included).length` for all combinations
     - _Test file: `packages/frontend/src/features/playlist/trackSelection.test.ts`_
-  - [ ] 14.5 Implement `ResultsPage.tsx` — compose track list, count badge, and save form
+  - [x] 14.5 Implement `ResultsPage.tsx` — compose track list, count badge, and save form
     - Fetch `GenerationResult` from router state (passed via navigation); render `TrackCard` per track with staggered fade-in animation; show `partialWarning` pill if flagged; render `SavePlaylistForm`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 5.6_
 
-- [ ] 15. Frontend — save playlist form and confirmation
-  - [ ] 15.1 Implement `features/playlist/SavePlaylistForm.tsx` and `playlistApi.ts`
+- [x] 15. Frontend — save playlist form and confirmation
+  - [x] 15.1 Implement `features/playlist/SavePlaylistForm.tsx` and `playlistApi.ts`
     - `playlistApi.ts`: `savePlaylist({ generationId, includedTrackUris, playlistName? })` → POST `/api/playlists/save`
     - `SavePlaylistForm.tsx`: optional custom name input (placeholder = default ISO 8601 name); Save button; on success display confirmation message with direct Spotify playlist link; on failure show `ErrorBanner` without clearing track selection
     - _Requirements: 7.1, 7.2, 7.4, 7.5, 7.6_
@@ -300,12 +300,12 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Mock to fail → assert `ErrorBanner` shown and track toggle state unchanged
     - _Test file: `packages/frontend/src/features/playlist/SavePlaylistForm.test.tsx`_
 
-- [ ] 16. Checkpoint — full UI integration
+- [x] 16. Checkpoint — full UI integration
   - Ensure all frontend tests pass (`npx vitest run` in `packages/frontend`) and all backend tests still pass, ask the user if questions arise.
 
 
-- [ ] 17. Integration tests — full pipeline and error paths
-  - [ ] 17.1 Write integration test for full generation pipeline (backend)
+- [x] 17. Integration tests — full pipeline and error paths
+  - [x] 17.1 Write integration test for full generation pipeline (backend)
     - Use `nock` to mock Spotify endpoints and Anthropic SDK; feed fixture taste profile → fixture Claude response → fixture Spotify search results; assert `GenerationResult` structure is correct
     - _Requirements: 2.1–2.5, 3.1–3.5, 4.1–4.6, 5.1–5.7_
   - [ ]* 17.2 Write integration test for token refresh path
@@ -318,8 +318,8 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - Mock Anthropic SDK to return malformed JSON twice; assert 502 `ClaudeApiError` propagated to frontend
     - _Requirements: 4.3_
 
-- [ ] 18. Observability — structured logging and error surfacing
-  - [ ] 18.1 Add structured log calls to all remaining backend services and routes
+- [x] 18. Observability — structured logging and error surfacing
+  - [x] 18.1 Add structured log calls to all remaining backend services and routes
     - Each significant pipeline step emits `{ severity, timestamp, correlationId, spotifyUserId, step, message, durationMs }`
     - Verify no token, key, or secret values appear in any log call
     - _Requirements: 9.5, 10.1, 10.2, 10.3_
@@ -329,20 +329,20 @@ Property-based tests use **fast-check** and are co-located with the implementati
     - `POST /api/generate` with zero selected playlists → relies on top tracks and recently played only
     - _Requirements: 8.3, 3.2_
 
-- [ ] 19. Deployment configuration
-  - [ ] 19.1 Finalise `Dockerfile` and Cloud Run configuration
+- [x] 19. Deployment configuration
+  - [x] 19.1 Finalise `Dockerfile` and Cloud Run configuration
     - Multi-stage build: `node:20-alpine` builder → slim production image
     - Confirm port 8080, `NODE_ENV=production`, concurrency 80; document env var vs. Secret Manager split
     - Add `GET /health` route returning `{ status: 'ok', version }` (used by Cloud Run health check)
     - _Requirements: 9.1, 9.2, 9.4_
-  - [ ] 19.2 Create `firebase.json` and `.firebaserc` for Firebase Hosting
+  - [x] 19.2 Create `firebase.json` and `.firebaserc` for Firebase Hosting
     - SPA rewrite: all routes → `index.html`; long-lived cache headers for hashed assets; no-store for `index.html`
     - _Requirements: 9.4_
-  - [ ] 19.3 Create GitHub Actions CI/CD workflow (`.github/workflows/deploy.yml`)
+  - [x] 19.3 Create GitHub Actions CI/CD workflow (`.github/workflows/deploy.yml`)
     - Steps: `npm run typecheck && npx vitest run` (both packages) → `docker build` → push to Artifact Registry → `gcloud run deploy` → `firebase deploy --only hosting`
     - _Requirements: 9.4_
 
-- [ ] 20. Final checkpoint — all tests pass, build clean
+- [x] 20. Final checkpoint — all tests pass, build clean
   - Ensure `npx vitest run` passes in both `packages/frontend` and `packages/backend`; TypeScript compiles without errors in both packages; ask the user if questions arise.
 
 ---

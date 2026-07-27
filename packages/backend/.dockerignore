@@ -1,0 +1,33 @@
+# Dependencies (reinstalled in container)
+node_modules
+
+# Build output (rebuilt in container)
+dist
+
+# Test and coverage artifacts
+coverage
+*.test.ts
+vitest.config.ts
+
+# Development files
+.env
+.env.*
+nodemon.json
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+CHANGELOG.md
+
+# OS files
+.DS_Store
+Thumbs.db

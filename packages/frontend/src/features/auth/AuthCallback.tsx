@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import apiClient from "../../lib/apiClient";
 import { useAuth } from "./useAuth";
@@ -16,8 +16,12 @@ export function AuthCallback() {
   const { checkAuth } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const [correlationId, setCorrelationId] = useState<string | undefined>();
+  const hasRun = useRef(false);
 
   useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const code = searchParams.get("code");
     const state = searchParams.get("state");
 

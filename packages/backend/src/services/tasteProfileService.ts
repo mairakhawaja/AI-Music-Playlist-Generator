@@ -11,6 +11,7 @@
 import type { TasteProfile, SpotifyTimeRange } from '../lib/types.js';
 import type { SpotifyArtist, SpotifyTrack, SpotifyPlayHistoryObject } from '../clients/spotifyClient.js';
 import type { RawListeningData } from './listeningDataService.js';
+import { logger } from '../lib/logger.js';
 
 // ---------------------------------------------------------------------------
 // Constants — size limits per Requirement 3.4
@@ -76,12 +77,19 @@ export function rankGenres(
  *   and takes the first MAX_TOP_ARTISTS entries.
  * - Takes the first MAX_RECENTLY_PLAYED recently played tracks.
  *
- * @param rawData  The RawListeningData collected by listeningDataService.
+ * @param rawData        The RawListeningData collected by listeningDataService.
+ * @param correlationId  Optional correlation ID for structured logging.
+ * @param spotifyUserId  Optional Spotify user ID for structured logging.
  * @returns A fully populated and size-limited TasteProfile.
  *
  * Requirements: 3.1, 3.2, 3.3, 3.4
  */
-export function assembleTasteProfile(rawData: RawListeningData): TasteProfile {
+export function assembleTasteProfile(
+  rawData: RawListeningData,
+  correlationId?: string,
+  spotifyUserId?: string,
+): TasteProfile {
+  const startTime = Date.now();
   // --- Ranked Genres ---
   const rankedGenres = rankGenres(rawData.artistDetails);
 
@@ -100,12 +108,27 @@ export function assembleTasteProfile(rawData: RawListeningData): TasteProfile {
       playedAt: item.played_at,
     }));
 
-  return {
+  const profile: TasteProfile = {
     rankedGenres,
     topTracks,
     topArtists,
     recentlyPlayed,
   };
+
+  if (correlationId) {
+    logger.info('Taste profile assembled', {
+      correlationId,
+      ...(spotifyUserId ? { spotifyUserId } : {}),
+      step: 'TASTE_PROFILE_ASSEMBLE',
+      durationMs: Date.now() - startTime,
+      genreCount: rankedGenres.length,
+      topTrackCount: topTracks.length,
+      topArtistCount: topArtists.length,
+      recentlyPlayedCount: recentlyPlayed.length,
+    });
+  }
+
+  return profile;
 }
 
 // ---------------------------------------------------------------------------

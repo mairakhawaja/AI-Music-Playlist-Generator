@@ -15,15 +15,16 @@ import axios from 'axios';
 import {
   generatePkce,
   generateState,
-  exchangeCode,
   signSessionJwt,
 } from '../services/authService.js';
 import {
   savePkceState,
   getPkceState,
   deletePkceState,
+  upsertUser,
 } from '../clients/firestoreClient.js';
 import { authenticate } from '../middleware/authenticate.js';
+import { encrypt } from '../lib/encryption.js';
 import { AuthError } from '../lib/errors.js';
 import { logger } from '../lib/logger.js';
 
@@ -57,6 +58,9 @@ const SESSION_COOKIE_NAME = 'session';
 
 /** Session cookie max age: 1 hour in milliseconds. */
 const SESSION_COOKIE_MAX_AGE = 3600 * 1000;
+
+/** Cache of recently completed callbacks to handle duplicate requests (React StrictMode). */
+const recentCallbacks = new Map<string, { displayName: string; token: string }>();
 
 // ---------------------------------------------------------------------------
 // Router
@@ -106,6 +110,7 @@ router.get('/login', async (req: Request, res: Response): Promise<void> => {
       codeVerifier: pkce.codeVerifier,
       createdAt: new Date().toISOString(),
     });
+    console.log('[DEBUG] Saved PKCE state for key:', state);
 
     // Build the Spotify authorize URL
     const params = new URLSearchParams({
@@ -163,6 +168,8 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
     const code = req.query['code'] as string | undefined;
     const state = req.query['state'] as string | undefined;
 
+    console.log('[DEBUG] Callback hit. code:', code?.substring(0, 10) + '...', 'state:', state);
+
     if (!code || !state) {
       throw new AuthError(
         'INVALID_CALLBACK',
@@ -171,8 +178,23 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
       );
     }
 
+    // Handle duplicate requests (React StrictMode double-fire)
+    const cached = recentCallbacks.get(state);
+    if (cached) {
+      res.cookie(SESSION_COOKIE_NAME, cached.token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: SESSION_COOKIE_MAX_AGE,
+      });
+      res.json({ displayName: cached.displayName });
+      return;
+    }
+
     // Verify state exists in Firestore
     const pkceState = await getPkceState(state);
+    console.log('[DEBUG] getPkceState result:', pkceState ? 'FOUND' : 'NOT FOUND');
     if (!pkceState) {
       throw new AuthError(
         'INVALID_STATE',
@@ -195,13 +217,11 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
       );
     }
 
-    // Exchange code for access token so we can call /me to get user info.
-    // exchangeCode() in authService will perform a second exchange to handle
-    // persistence — acceptable since this is a one-time auth flow.
     const { getSecret } = await import('../lib/secretManager.js');
     const clientSecret = getSecret('SPOTIFY_CLIENT_SECRET');
     const redirectUri = process.env['SPOTIFY_REDIRECT_URI'] ?? '';
 
+    // Exchange the authorization code for tokens (single-use — only do this ONCE)
     const tokenParams = new URLSearchParams({
       grant_type: 'authorization_code',
       code,
@@ -211,6 +231,7 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
     });
 
     let accessToken: string;
+    let refreshToken: string;
     try {
       const tokenResponse = await axios.post(
         'https://accounts.spotify.com/api/token',
@@ -224,14 +245,15 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
         },
       );
       accessToken = tokenResponse.data.access_token;
+      refreshToken = tokenResponse.data.refresh_token;
     } catch (err) {
       const message = axios.isAxiosError(err)
-        ? `Spotify token exchange failed: ${err.response?.status ?? 'unknown'}`
+        ? `Spotify token exchange failed: ${err.response?.status ?? 'unknown'} ${JSON.stringify(err.response?.data ?? {})}`
         : 'Spotify token exchange failed.';
       throw new AuthError('TOKEN_EXCHANGE_FAILED', message, 401);
     }
 
-    // Fetch Spotify user profile
+    // Fetch Spotify user profile using the access token
     let spotifyUserId: string;
     let displayName: string;
     try {
@@ -241,15 +263,22 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
       spotifyUserId = meResponse.data.id;
       displayName = meResponse.data.display_name ?? meResponse.data.id;
     } catch (err) {
-      throw new AuthError(
-        'SPOTIFY_PROFILE_FAILED',
-        'Failed to fetch Spotify user profile.',
-        502,
-      );
+      const message = axios.isAxiosError(err)
+        ? `Spotify /me failed: ${err.response?.status ?? 'unknown'} ${JSON.stringify(err.response?.data ?? {})}`
+        : 'Failed to fetch Spotify user profile.';
+      console.error('[DEBUG] /me error:', message);
+      throw new AuthError('SPOTIFY_PROFILE_FAILED', message, 502);
     }
 
-    // Exchange code and persist user (this does its own token exchange + upsert)
-    await exchangeCode(code, codeVerifier, spotifyUserId, displayName);
+    // Encrypt refresh token and persist user (no second exchange needed)
+    const encryptionKeyHex = getSecret('REFRESH_TOKEN_ENCRYPTION_KEY');
+    const encryptionKey = Buffer.from(encryptionKeyHex, 'hex');
+    const encryptedRefreshToken = encrypt(refreshToken, encryptionKey);
+
+    await upsertUser(spotifyUserId, {
+      displayName,
+      encryptedRefreshToken,
+    });
 
     // Sign session JWT
     const token = signSessionJwt({ spotifyUserId, displayName });
@@ -268,6 +297,10 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
       spotifyUserId,
       step: 'AUTH_CALLBACK',
     });
+
+    // Cache for 60 seconds to handle duplicate requests
+    recentCallbacks.set(state, { displayName, token });
+    setTimeout(() => recentCallbacks.delete(state), 60_000);
 
     res.json({ displayName });
   } catch (err) {
@@ -293,12 +326,20 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
  * Clears the session cookie and returns 200.
  */
 router.post('/logout', (_req: Request, res: Response): void => {
+  const correlationId = (res.locals['correlationId'] as string | undefined) ?? 'unknown';
+
   res.clearCookie(SESSION_COOKIE_NAME, {
     httpOnly: true,
     secure: true,
     sameSite: 'lax',
     path: '/',
   });
+
+  logger.info('User logged out', {
+    correlationId,
+    step: 'AUTH_LOGOUT',
+  });
+
   res.status(200).json({ message: 'Logged out successfully.' });
 });
 
@@ -311,7 +352,15 @@ router.post('/logout', (_req: Request, res: Response): void => {
  * Response: { spotifyUserId: string, displayName: string }
  */
 router.get('/me', authenticate, (req: Request, res: Response): void => {
+  const correlationId = (res.locals['correlationId'] as string | undefined) ?? 'unknown';
   const user = req.user!;
+
+  logger.info('User info requested', {
+    correlationId,
+    spotifyUserId: user.spotifyUserId,
+    step: 'AUTH_ME',
+  });
+
   res.json({ spotifyUserId: user.spotifyUserId, displayName: user.displayName });
 });
 

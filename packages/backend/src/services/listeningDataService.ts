@@ -61,6 +61,7 @@ const TIME_RANGES: SpotifyTimeRange[] = ['short_term', 'medium_term', 'long_term
  * @param tokenCtx        The user's current Spotify token context.
  * @param playlistIds     Selected playlist IDs to include in the analysis (may be empty).
  * @param correlationId   Correlation ID for structured logging.
+ * @param spotifyUserId   Optional Spotify user ID for structured logging.
  * @returns A structured `RawListeningData` object containing all fetched data.
  */
 export async function fetchAllListeningData(
@@ -68,6 +69,7 @@ export async function fetchAllListeningData(
   tokenCtx: SpotifyTokenContext,
   playlistIds: string[],
   correlationId: string,
+  spotifyUserId?: string,
 ): Promise<RawListeningData> {
   // --- Top Tracks (×3 ranges) ---
   const topTracks: Record<SpotifyTimeRange, SpotifyTrack[]> = {
@@ -87,6 +89,7 @@ export async function fetchAllListeningData(
 
     logger.info(`Fetched top tracks for ${range}`, {
       correlationId,
+      ...(spotifyUserId ? { spotifyUserId } : {}),
       step: 'LISTENING_DATA_FETCH',
       durationMs: Date.now() - start,
     });
@@ -110,6 +113,7 @@ export async function fetchAllListeningData(
 
     logger.info(`Fetched top artists for ${range}`, {
       correlationId,
+      ...(spotifyUserId ? { spotifyUserId } : {}),
       step: 'LISTENING_DATA_FETCH',
       durationMs: Date.now() - start,
     });
@@ -125,6 +129,7 @@ export async function fetchAllListeningData(
 
   logger.info('Fetched recently played tracks', {
     correlationId,
+    ...(spotifyUserId ? { spotifyUserId } : {}),
     step: 'LISTENING_DATA_FETCH',
     durationMs: Date.now() - recentStart,
   });
@@ -143,6 +148,7 @@ export async function fetchAllListeningData(
 
     logger.info(`Fetched tracks for playlist ${playlistId}`, {
       correlationId,
+      ...(spotifyUserId ? { spotifyUserId } : {}),
       step: 'LISTENING_DATA_FETCH',
       durationMs: Date.now() - start,
     });
@@ -162,6 +168,7 @@ export async function fetchAllListeningData(
 
     logger.info(`Fetched ${artistDetails.length} artist details for genre info`, {
       correlationId,
+      ...(spotifyUserId ? { spotifyUserId } : {}),
       step: 'LISTENING_DATA_FETCH',
       durationMs: Date.now() - start,
     });

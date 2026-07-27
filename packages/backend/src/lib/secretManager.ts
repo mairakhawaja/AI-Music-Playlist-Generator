@@ -21,8 +21,36 @@ const SECRET_NAMES: SecretName[] = [
 const secretCache = new Map<SecretName, string>();
 
 /**
- * Loads all required secrets from Google Secret Manager into the in-memory
- * cache. Must be called once before the HTTP server starts listening.
+ * Loads secrets from environment variables for local development.
+ * Falls back to this when NODE_ENV is not 'production'.
+ */
+export function loadSecretsFromEnv(): void {
+  const missing: string[] = [];
+
+  for (const name of SECRET_NAMES) {
+    const value = process.env[name];
+    if (!value || !value.trim()) {
+      missing.push(name);
+    } else {
+      secretCache.set(name, value.trim());
+    }
+  }
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables for local development:\n` +
+        missing.map((n) => `  - ${n}`).join('\n') +
+        '\nAdd them to your .env file.',
+    );
+  }
+}
+
+/**
+ * Loads all required secrets into the in-memory cache. Must be called once
+ * before the HTTP server starts listening.
+ *
+ * In non-production environments, secrets are loaded from environment variables.
+ * In production, they are fetched from Google Secret Manager.
  *
  * The GCP project ID is resolved from the environment variable
  * `GOOGLE_CLOUD_PROJECT` (set automatically on Cloud Run) or the
@@ -31,6 +59,12 @@ const secretCache = new Map<SecretName, string>();
  * @throws {Error} If any secret fails to load or its value is empty.
  */
 export async function loadSecrets(): Promise<void> {
+  // In non-production environments, load secrets from env vars
+  if (process.env['NODE_ENV'] !== 'production') {
+    loadSecretsFromEnv();
+    return;
+  }
+
   const projectId = process.env['GOOGLE_CLOUD_PROJECT'] ?? process.env['GCP_PROJECT_ID'];
   if (!projectId) {
     throw new Error(

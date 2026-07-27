@@ -30,6 +30,7 @@ import { getSecret } from '../lib/secretManager.js';
 import { AuthError } from '../lib/errors.js';
 import { encrypt, decrypt } from '../lib/encryption.js';
 import { upsertUser } from '../clients/firestoreClient.js';
+import { logger } from '../lib/logger.js';
 import type { SessionPayload } from '../lib/types.js';
 
 // ---------------------------------------------------------------------------
@@ -187,7 +188,10 @@ export async function exchangeCode(
   codeVerifier: string,
   spotifyUserId: string,
   displayName: string,
+  correlationId: string = 'unknown',
 ): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  const startTime = Date.now();
+
   const clientId = process.env['SPOTIFY_CLIENT_ID'];
   if (!clientId) {
     throw new AuthError(
@@ -222,6 +226,14 @@ export async function exchangeCode(
       axios.isAxiosError(err)
         ? `Spotify token exchange failed: ${err.response?.status ?? 'unknown'} ${JSON.stringify(err.response?.data ?? {})}`
         : 'Spotify token exchange failed with an unexpected error.';
+
+    logger.error('Token exchange failed', {
+      correlationId,
+      spotifyUserId,
+      step: 'TOKEN_EXCHANGE',
+      durationMs: Date.now() - startTime,
+    });
+
     throw new AuthError('TOKEN_EXCHANGE_FAILED', message, 401);
   }
 
@@ -233,6 +245,13 @@ export async function exchangeCode(
   await upsertUser(spotifyUserId, {
     displayName,
     encryptedRefreshToken,
+  });
+
+  logger.info('Token exchange completed successfully', {
+    correlationId,
+    spotifyUserId,
+    step: 'TOKEN_EXCHANGE',
+    durationMs: Date.now() - startTime,
   });
 
   return {
@@ -253,7 +272,12 @@ export async function exchangeCode(
  *
  * Requirements: 1.5, 1.6
  */
-export async function refreshAccessToken(encryptedRefreshToken: string): Promise<string> {
+export async function refreshAccessToken(
+  encryptedRefreshToken: string,
+  correlationId: string = 'unknown',
+): Promise<string> {
+  const startTime = Date.now();
+
   const clientId = process.env['SPOTIFY_CLIENT_ID'];
   if (!clientId) {
     throw new AuthError(
@@ -271,6 +295,11 @@ export async function refreshAccessToken(encryptedRefreshToken: string): Promise
     const encryptionKey = getEncryptionKey();
     refreshToken = decrypt(encryptedRefreshToken, encryptionKey);
   } catch {
+    logger.error('Refresh token decryption failed', {
+      correlationId,
+      step: 'TOKEN_REFRESH',
+      durationMs: Date.now() - startTime,
+    });
     throw new AuthError(
       'REFRESH_TOKEN_DECRYPT_FAILED',
       'Failed to decrypt the stored refresh token. Re-authentication required.',
@@ -299,9 +328,22 @@ export async function refreshAccessToken(encryptedRefreshToken: string): Promise
       axios.isAxiosError(err)
         ? `Spotify token refresh failed: ${err.response?.status ?? 'unknown'} ${JSON.stringify(err.response?.data ?? {})}`
         : 'Spotify token refresh failed with an unexpected error.';
+
+    logger.error('Token refresh failed', {
+      correlationId,
+      step: 'TOKEN_REFRESH',
+      durationMs: Date.now() - startTime,
+    });
+
     // Requirement 1.6: if refresh fails, require re-authentication
     throw new AuthError('TOKEN_REFRESH_FAILED', message, 401);
   }
+
+  logger.info('Token refresh completed successfully', {
+    correlationId,
+    step: 'TOKEN_REFRESH',
+    durationMs: Date.now() - startTime,
+  });
 
   return tokenData.access_token;
 }

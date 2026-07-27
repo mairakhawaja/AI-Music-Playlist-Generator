@@ -38,6 +38,13 @@ const router = Router();
 router.post('/', authenticate, async (req: Request, res: Response): Promise<void> => {
   const correlationId = (res.locals['correlationId'] as string | undefined) ?? 'unknown';
   const user = req.user!;
+  const requestStart = Date.now();
+
+  logger.info('Generation request received', {
+    correlationId,
+    spotifyUserId: user.spotifyUserId,
+    step: 'GENERATION_REQUEST',
+  });
 
   try {
     // ── Body validation ─────────────────────────────────────────────────────
@@ -95,6 +102,7 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
       step: 'GENERATION_COMPLETE',
       cached: result.cached,
       trackCount: result.tracks.length,
+      durationMs: Date.now() - requestStart,
     });
 
     res.json(result);

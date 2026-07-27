@@ -51,12 +51,14 @@ function isValidCandidateList(candidateList: CandidateList): boolean {
  *
  * @param tasteProfile The assembled taste profile for the user.
  * @param correlationId The request correlation ID for structured logging.
+ * @param spotifyUserId Optional Spotify user ID for structured logging.
  * @returns A validated `CandidateList` with ~30 candidate tracks.
  * @throws {ClaudeApiError} If both attempts fail (API error or malformed response).
  */
 export async function generateCandidateList(
   tasteProfile: TasteProfile,
   correlationId: string,
+  spotifyUserId?: string,
 ): Promise<CandidateList> {
   const maxAttempts = 2;
 
@@ -66,6 +68,7 @@ export async function generateCandidateList(
     try {
       logger.info(`Claude recommendation request attempt ${attempt}`, {
         correlationId,
+        ...(spotifyUserId ? { spotifyUserId } : {}),
         step: 'CLAUDE_REQUEST',
         attempt,
       });
@@ -77,6 +80,7 @@ export async function generateCandidateList(
       if (isValidCandidateList(candidateList)) {
         logger.info('Claude recommendation request succeeded', {
           correlationId,
+          ...(spotifyUserId ? { spotifyUserId } : {}),
           step: 'CLAUDE_REQUEST',
           durationMs,
           attempt,
@@ -90,6 +94,7 @@ export async function generateCandidateList(
         `Claude response failed validation on attempt ${attempt}`,
         {
           correlationId,
+          ...(spotifyUserId ? { spotifyUserId } : {}),
           step: 'CLAUDE_REQUEST',
           durationMs,
           attempt,
@@ -118,6 +123,7 @@ export async function generateCandidateList(
         `Claude request failed on attempt ${attempt}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         {
           correlationId,
+          ...(spotifyUserId ? { spotifyUserId } : {}),
           step: 'CLAUDE_REQUEST',
           durationMs,
           attempt,
