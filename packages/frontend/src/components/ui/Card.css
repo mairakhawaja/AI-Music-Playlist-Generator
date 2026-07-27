@@ -1,0 +1,14 @@
+.card {
+  background-color: var(--bg-card);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 16px;
+  transition:
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.card:hover {
+  background-color: var(--bg-card-hover);
+  transform: scale(1.01);
+}

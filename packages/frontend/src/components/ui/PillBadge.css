@@ -1,0 +1,11 @@
+.pill-badge {
+  display: inline-block;
+  background-color: var(--bg-card-hover);
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+}

@@ -1,0 +1,95 @@
+name: CI/CD — Build, Test & Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    name: Typecheck & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Test backend
+        run: npx vitest run
+        working-directory: packages/backend
+
+      - name: Test frontend
+        run: npx vitest run
+        working-directory: packages/frontend
+
+  build-and-deploy:
+    name: Build & Deploy
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: packages/frontend
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            -t ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-music-generator/backend:${{ github.sha }} \
+            -t ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-music-generator/backend:latest \
+            packages/backend
+
+      - name: Push Docker image
+        run: |
+          docker push ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-music-generator/backend:${{ github.sha }}
+          docker push ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-music-generator/backend:latest
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy ai-music-generator-backend \
+            --image ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-music-generator/backend:${{ github.sha }} \
+            --region ${{ vars.GCP_REGION }} \
+            --platform managed \
+            --port 8080 \
+            --concurrency 80 \
+            --min-instances 1 \
+            --max-instances 10 \
+            --memory 512Mi \
+            --cpu 1 \
+            --set-env-vars "NODE_ENV=production" \
+            --allow-unauthenticated \
+            --quiet
+
+      - name: Deploy to Firebase Hosting
+        run: npx firebase deploy --only hosting --token ${{ secrets.FIREBASE_TOKEN }}

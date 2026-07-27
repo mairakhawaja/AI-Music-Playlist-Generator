@@ -1,0 +1,32 @@
+.generator-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.generator-page__header {
+  margin-bottom: 24px;
+}
+
+.generator-page__title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.generator-page__subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+@media (min-width: 640px) {
+  .generator-page {
+    padding: 40px 24px;
+  }
+
+  .generator-page__title {
+    font-size: 32px;
+  }
+}

@@ -1,0 +1,30 @@
+.track-toggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent-primary);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    background-color 150ms ease,
+    transform 100ms ease;
+}
+
+.track-toggle:active {
+  transform: scale(1.15);
+}
+
+.track-toggle--excluded {
+  background-color: #ef4444;
+}
+
+.track-toggle:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
