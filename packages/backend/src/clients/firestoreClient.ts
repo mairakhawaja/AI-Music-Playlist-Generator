@@ -119,7 +119,8 @@ let firestoreInstance: Firestore | null = null;
  */
 function getFirestore(): Firestore {
   if (firestoreInstance === null) {
-    firestoreInstance = new Firestore();
+    const databaseId = process.env['FIRESTORE_DATABASE_ID'] || '(default)';
+    firestoreInstance = new Firestore({ databaseId });
   }
   return firestoreInstance;
 }
