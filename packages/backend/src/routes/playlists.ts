@@ -76,7 +76,7 @@ router.get('/', authenticate, async (req: Request, res: Response): Promise<void>
       id: item.id,
       name: item.name,
       coverImageUrl: item.images && item.images.length > 0 ? item.images[0]!.url : null,
-      trackCount: item.tracks.total,
+      trackCount: item.items?.total ?? item.tracks?.total ?? 0,
     }));
 
     logger.info('User playlists fetched', {

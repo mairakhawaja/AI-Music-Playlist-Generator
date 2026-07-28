@@ -13,8 +13,11 @@ export function AuthGuard() {
   const { isAuthenticated, isLoading, checkAuth } = useAuth();
 
   useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+    // Only check auth if we haven't already determined auth state
+    if (isLoading) {
+      checkAuth();
+    }
+  }, [checkAuth, isLoading]);
 
   if (isLoading) {
     return <LoadingSpinner variant="fullscreen" label="Checking session" />;

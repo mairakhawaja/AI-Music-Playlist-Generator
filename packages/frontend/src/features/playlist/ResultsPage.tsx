@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import type { GenerationResult } from "../generator/generatorApi";
+import { useNavigate } from "react-router-dom";
 import { PillBadge } from "../../components/ui";
 import { TrackCard } from "./TrackCard";
 import { IncludedCount } from "./IncludedCount";
@@ -9,23 +8,18 @@ import { useTrackSelectionStore } from "./trackSelectionStore";
 import "./ResultsPage.css";
 
 export function ResultsPage() {
-  const location = useLocation();
   const navigate = useNavigate();
-  const result = location.state as GenerationResult | undefined;
-
-  const initTracks = useTrackSelectionStore((s) => s.initTracks);
+  const generationResult = useTrackSelectionStore((s) => s.generationResult);
   const tracks = useTrackSelectionStore((s) => s.tracks);
   const toggleTrack = useTrackSelectionStore((s) => s.toggleTrack);
 
   useEffect(() => {
-    if (!result) {
+    if (!generationResult) {
       navigate("/generate", { replace: true });
-      return;
     }
-    initTracks(result.tracks);
-  }, [result, initTracks, navigate]);
+  }, [generationResult, navigate]);
 
-  if (!result) {
+  if (!generationResult || tracks.length === 0) {
     return null;
   }
 
@@ -35,7 +29,7 @@ export function ResultsPage() {
         <h1 className="results-page__title">Your Recommendations</h1>
         <div className="results-page__badges">
           <IncludedCount />
-          {result.partialWarning && (
+          {generationResult.partialWarning && (
             <PillBadge label="Partial results" className="results-page__partial-warning" />
           )}
         </div>
@@ -57,7 +51,7 @@ export function ResultsPage() {
         ))}
       </div>
 
-      <SavePlaylistForm generationId={result.generationId} />
+      <SavePlaylistForm generationId={generationResult.generationId} />
     </div>
   );
 }

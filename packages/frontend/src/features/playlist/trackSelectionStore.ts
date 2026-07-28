@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import type { ResolvedTrack } from "../generator/generatorApi";
+import { useShallow } from "zustand/react/shallow";
+import type { ResolvedTrack, GenerationResult } from "../generator/generatorApi";
 
 export interface TrackUIState {
   track: ResolvedTrack;
@@ -8,12 +9,22 @@ export interface TrackUIState {
 
 interface TrackSelectionState {
   tracks: TrackUIState[];
+  generationResult: GenerationResult | null;
+  setGenerationResult: (result: GenerationResult) => void;
   initTracks: (resolvedTracks: ResolvedTrack[]) => void;
   toggleTrack: (trackId: string) => void;
 }
 
 export const useTrackSelectionStore = create<TrackSelectionState>((set) => ({
   tracks: [],
+  generationResult: null,
+
+  setGenerationResult: (result) => {
+    set({
+      generationResult: result,
+      tracks: result.tracks.map((track) => ({ track, included: true })),
+    });
+  },
 
   initTracks: (resolvedTracks) => {
     set({
@@ -32,14 +43,19 @@ export const useTrackSelectionStore = create<TrackSelectionState>((set) => ({
   },
 }));
 
-/** Derived selector: number of included tracks */
+/** Derived selector: number of included tracks (returns a primitive — safe) */
 export function selectIncludedCount(state: TrackSelectionState): number {
   return state.tracks.filter((t) => t.included).length;
 }
 
-/** Derived selector: URIs of included tracks */
-export function selectIncludedUris(state: TrackSelectionState): string[] {
-  return state.tracks
-    .filter((t) => t.included)
-    .map((t) => t.track.spotifyUri);
+/**
+ * Hook that returns included URIs with shallow equality comparison.
+ * This prevents infinite re-renders from new array references.
+ */
+export function useIncludedUris(): string[] {
+  return useTrackSelectionStore(
+    useShallow((state) =>
+      state.tracks.filter((t) => t.included).map((t) => t.track.spotifyUri),
+    ),
+  );
 }

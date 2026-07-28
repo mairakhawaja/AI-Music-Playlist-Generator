@@ -104,11 +104,12 @@ export async function resolveTrack(
   try {
     inLibrary = await spotifyClient.checkLibrary([matched.id], tokenCtx, correlationId);
   } catch (error) {
-    logger.warn(`Library check failed for track "${matched.id}"`, {
+    logger.warn(`Library check failed for track "${matched.id}", assuming not in library`, {
       correlationId,
       step: 'TRACK_RESOLUTION',
     });
-    return null;
+    // Default to "not in library" so we don't drop the track
+    inLibrary = [false];
   }
 
   if (inLibrary[0]) {
