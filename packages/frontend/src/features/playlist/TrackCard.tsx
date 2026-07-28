@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useState } from "react";
 import type { ResolvedTrack } from "../generator/generatorApi";
 import { TrackToggle } from "./TrackToggle";
 import "./TrackCard.css";
@@ -11,40 +11,7 @@ export interface TrackCardProps {
 }
 
 export function TrackCard({ track, included, onToggle, style }: TrackCardProps) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [playing, setPlaying] = useState(false);
-
-  // Stop playback if component unmounts
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  function handlePlayPause() {
-    if (!track.previewUrl) return;
-
-    if (playing && audioRef.current) {
-      audioRef.current.pause();
-      setPlaying(false);
-    } else {
-      // Stop any other audio playing on the page
-      document.querySelectorAll("audio").forEach((a) => {
-        a.pause();
-        a.currentTime = 0;
-      });
-
-      if (!audioRef.current) {
-        audioRef.current = new Audio(track.previewUrl);
-        audioRef.current.addEventListener("ended", () => setPlaying(false));
-      }
-      audioRef.current.play();
-      setPlaying(true);
-    }
-  }
+  const [showEmbed, setShowEmbed] = useState(false);
 
   return (
     <div
@@ -59,16 +26,14 @@ export function TrackCard({ track, included, onToggle, style }: TrackCardProps) 
           width={72}
           height={72}
         />
-        {track.previewUrl && (
-          <button
-            className={`track-card__play-btn ${playing ? "track-card__play-btn--playing" : ""}`}
-            onClick={handlePlayPause}
-            aria-label={playing ? `Pause ${track.title}` : `Play preview of ${track.title}`}
-            type="button"
-          >
-            {playing ? "⏸" : "▶"}
-          </button>
-        )}
+        <button
+          className={`track-card__play-btn ${showEmbed ? "track-card__play-btn--playing" : ""}`}
+          onClick={() => setShowEmbed(!showEmbed)}
+          aria-label={showEmbed ? `Hide player for ${track.title}` : `Preview ${track.title}`}
+          type="button"
+        >
+          {showEmbed ? "✕" : "▶"}
+        </button>
       </div>
 
       <div className="track-card__info">
@@ -89,6 +54,20 @@ export function TrackCard({ track, included, onToggle, style }: TrackCardProps) 
       <div className="track-card__toggle">
         <TrackToggle included={included} onToggle={onToggle} trackTitle={track.title} />
       </div>
+
+      {showEmbed && (
+        <div className="track-card__embed">
+          <iframe
+            src={`https://open.spotify.com/embed/track/${track.trackId}?utm_source=generator&theme=0`}
+            width="100%"
+            height="80"
+            frameBorder="0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+            loading="lazy"
+            title={`Spotify player for ${track.title}`}
+          />
+        </div>
+      )}
     </div>
   );
 }
