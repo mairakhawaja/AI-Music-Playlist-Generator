@@ -68,9 +68,10 @@ jobs:
       - name: Build Docker image
         run: |
           docker build \
+            -f packages/backend/Dockerfile \
             -t ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-music-generator/backend:${{ github.sha }} \
             -t ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/ai-music-generator/backend:latest \
-            packages/backend
+            .
 
       - name: Push Docker image
         run: |
