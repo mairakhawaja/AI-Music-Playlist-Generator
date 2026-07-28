@@ -41,9 +41,9 @@ EXPOSE 8080
 # Cloud Run configuration:
 #   - Port: 8080 (matches ENV PORT above)
 #   - Concurrency: 80 requests per container instance (set in Cloud Run service config)
-#   - Min instances: 1 (avoid cold starts)
-#   - Max instances: 10
-#   - Memory: 512 MB
+#   - Min instances: 0 (scale to zero when idle — free tier friendly)
+#   - Max instances: 3
+#   - Memory: 256 MB
 #   - CPU: 1 vCPU
 #
 # Environment variables (non-secret, set in Cloud Run service config):
