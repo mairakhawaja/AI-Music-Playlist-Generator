@@ -184,7 +184,7 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
       res.cookie(SESSION_COOKIE_NAME, cached.token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'lax',
+        sameSite: 'none',
         path: '/',
         maxAge: SESSION_COOKIE_MAX_AGE,
       });
