@@ -17,6 +17,7 @@ export interface ResolvedTrack {
   spotifyUrl: string;
   reason: string;
   durationMs: number;
+  previewUrl: string | null;
 }
 
 export interface GenerationResult {
@@ -41,9 +42,11 @@ export async function getPlaylists(): Promise<SpotifyPlaylist[]> {
  */
 export async function generate(
   playlistIds: string[],
+  forceRefresh: boolean = false,
 ): Promise<GenerationResult> {
   const response = await apiClient.post<GenerationResult>("/generate", {
     playlistIds,
+    forceRefresh,
   });
   return response.data;
 }

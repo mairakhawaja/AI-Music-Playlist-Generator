@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, ErrorBanner } from "../../components/ui";
-import { savePlaylist } from "./playlistApi";
+import { savePlaylist, deletePlaylist } from "./playlistApi";
 import { useIncludedUris } from "./trackSelectionStore";
 import "./SavePlaylistForm.css";
 
@@ -23,7 +23,10 @@ export function SavePlaylistForm({ generationId }: SavePlaylistFormProps) {
   } | null>(null);
   const [success, setSuccess] = useState<{
     playlistUrl: string;
+    playlistId: string;
   } | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [deleted, setDeleted] = useState(false);
 
   async function handleSave() {
     setError(null);
@@ -35,7 +38,7 @@ export function SavePlaylistForm({ generationId }: SavePlaylistFormProps) {
         includedTrackUris: includedUris,
         playlistName: playlistName.trim() || undefined,
       });
-      setSuccess({ playlistUrl: result.playlistUrl });
+      setSuccess({ playlistUrl: result.playlistUrl, playlistId: result.playlistId });
     } catch (err: unknown) {
       const correlationId =
         err &&
@@ -70,7 +73,28 @@ export function SavePlaylistForm({ generationId }: SavePlaylistFormProps) {
     }
   }
 
+  if (deleted) {
+    return (
+      <div className="save-playlist-form">
+        <div className="save-playlist-form__success">
+          <span>Playlist removed from your Spotify.</span>
+        </div>
+      </div>
+    );
+  }
+
   if (success) {
+    async function handleDelete() {
+      setDeleting(true);
+      try {
+        await deletePlaylist(success!.playlistId);
+        setDeleted(true);
+      } catch {
+        // Silently fail — user can delete from Spotify directly
+        setDeleting(false);
+      }
+    }
+
     return (
       <div className="save-playlist-form">
         <div className="save-playlist-form__success">
@@ -80,8 +104,16 @@ export function SavePlaylistForm({ generationId }: SavePlaylistFormProps) {
             target="_blank"
             rel="noopener noreferrer"
           >
-            Open in Spotify ↗
+            Open in Spotify
           </a>
+          <Button
+            variant="ghost"
+            onClick={handleDelete}
+            loading={deleting}
+            disabled={deleting}
+          >
+            Delete Playlist
+          </Button>
         </div>
       </div>
     );

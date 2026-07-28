@@ -31,6 +31,12 @@
   gap: 12px;
 }
 
+.results-page__actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
 .results-page__track-enter {
   opacity: 0;
   transform: translateY(8px);

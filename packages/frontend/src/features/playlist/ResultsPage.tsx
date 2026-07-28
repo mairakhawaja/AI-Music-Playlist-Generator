@@ -1,17 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { PillBadge } from "../../components/ui";
+import { PillBadge, Button } from "../../components/ui";
 import { TrackCard } from "./TrackCard";
 import { IncludedCount } from "./IncludedCount";
 import { SavePlaylistForm } from "./SavePlaylistForm";
 import { useTrackSelectionStore } from "./trackSelectionStore";
+import { generate } from "../generator/generatorApi";
 import "./ResultsPage.css";
 
 export function ResultsPage() {
   const navigate = useNavigate();
   const generationResult = useTrackSelectionStore((s) => s.generationResult);
+  const setGenerationResult = useTrackSelectionStore((s) => s.setGenerationResult);
   const tracks = useTrackSelectionStore((s) => s.tracks);
   const toggleTrack = useTrackSelectionStore((s) => s.toggleTrack);
+  const [regenerating, setRegenerating] = useState(false);
 
   useEffect(() => {
     if (!generationResult) {
@@ -21,6 +24,18 @@ export function ResultsPage() {
 
   if (!generationResult || tracks.length === 0) {
     return null;
+  }
+
+  async function handleRegenerate() {
+    setRegenerating(true);
+    try {
+      const result = await generate([], true);
+      setGenerationResult(result);
+    } catch {
+      // Stay on page with current results if regeneration fails
+    } finally {
+      setRegenerating(false);
+    }
   }
 
   return (
@@ -34,6 +49,20 @@ export function ResultsPage() {
           )}
         </div>
       </header>
+
+      <div className="results-page__actions">
+        <Button variant="ghost" onClick={() => navigate("/generate")}>
+          Back
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={handleRegenerate}
+          loading={regenerating}
+          disabled={regenerating}
+        >
+          Re-generate
+        </Button>
+      </div>
 
       <div className="results-page__tracks">
         {tracks.map((item, index) => (

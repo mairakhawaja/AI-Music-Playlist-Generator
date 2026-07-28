@@ -24,3 +24,11 @@ export async function savePlaylist(
   );
   return response.data;
 }
+
+/**
+ * Delete (unfollow) a playlist from the user's Spotify account.
+ * DELETE /playlists/:id
+ */
+export async function deletePlaylist(playlistId: string): Promise<void> {
+  await apiClient.delete(`/playlists/${playlistId}`);
+}

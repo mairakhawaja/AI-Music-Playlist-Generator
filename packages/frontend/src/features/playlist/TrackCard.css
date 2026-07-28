@@ -39,6 +39,34 @@
   transition: opacity 200ms ease-out;
 }
 
+.track-card__art-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.track-card__play-btn {
+  position: absolute;
+  inset: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 150ms ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.track-card__art-wrapper:hover .track-card__play-btn,
+.track-card__play-btn--playing {
+  opacity: 1;
+}
+
 .track-card--excluded .track-card__art {
   opacity: 0.35;
 }

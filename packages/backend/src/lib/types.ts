@@ -59,6 +59,8 @@ export interface ResolvedTrack {
   /** Forwarded from the originating CandidateTrack. */
   reason: string;
   durationMs: number;
+  /** 30-second preview MP3 URL. Null if unavailable. */
+  previewUrl: string | null;
 }
 
 /**

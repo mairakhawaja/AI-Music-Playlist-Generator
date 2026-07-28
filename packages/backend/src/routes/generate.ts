@@ -48,7 +48,7 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
 
   try {
     // ── Body validation ─────────────────────────────────────────────────────
-    const { playlistIds } = req.body as { playlistIds?: unknown };
+    const { playlistIds, forceRefresh } = req.body as { playlistIds?: unknown; forceRefresh?: unknown };
 
     if (playlistIds !== undefined) {
       if (
@@ -94,6 +94,7 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
       spotifyClient,
       tokenCtx,
       correlationId,
+      forceRefresh === true,
     );
 
     logger.info('Generation completed', {

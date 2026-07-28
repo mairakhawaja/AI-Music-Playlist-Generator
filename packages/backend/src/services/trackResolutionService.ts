@@ -133,6 +133,7 @@ export async function resolveTrack(
     spotifyUrl: matched.external_urls.spotify,
     reason: candidate.reason,
     durationMs: matched.duration_ms,
+    previewUrl: matched.preview_url ?? null,
   };
 
   return resolvedTrack;

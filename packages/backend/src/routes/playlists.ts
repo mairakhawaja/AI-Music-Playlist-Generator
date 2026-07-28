@@ -237,4 +237,68 @@ router.post('/save', authenticate, async (req: Request, res: Response): Promise<
   }
 });
 
+/**
+ * DELETE /api/playlists/:id
+ *
+ * Unfollows (deletes) a playlist from the authenticated user's Spotify account.
+ *
+ * Response: { success: true }
+ */
+router.delete('/:id', authenticate, async (req: Request, res: Response): Promise<void> => {
+  const correlationId = (res.locals['correlationId'] as string | undefined) ?? 'unknown';
+  const user = req.user!;
+  const playlistId = req.params['id'] as string | undefined;
+
+  if (!playlistId) {
+    res.status(400).json({
+      error: { code: 'INVALID_INPUT', message: 'Playlist ID is required.', correlationId },
+    });
+    return;
+  }
+
+  try {
+    const userDoc = await getUser(user.spotifyUserId);
+    if (!userDoc) {
+      throw new AuthError('USER_NOT_FOUND', 'User record not found. Please re-authenticate.', 401);
+    }
+
+    const spotifyClient = createSpotifyClient(refreshAccessToken);
+    const accessToken = await refreshAccessToken(userDoc.encryptedRefreshToken);
+    const tokenCtx: SpotifyTokenContext = {
+      accessToken,
+      encryptedRefreshToken: userDoc.encryptedRefreshToken,
+    };
+
+    await spotifyClient.unfollowPlaylist(playlistId, tokenCtx, correlationId);
+
+    logger.info('Playlist deleted successfully', {
+      correlationId,
+      spotifyUserId: user.spotifyUserId,
+      playlistId,
+      step: 'PLAYLIST_DELETE',
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    if (err instanceof AppError) {
+      res.status(err.statusCode).json({
+        error: { code: err.code, message: err.message, correlationId },
+      });
+      return;
+    }
+
+    logger.error('Unexpected error deleting playlist', {
+      correlationId,
+      error: err instanceof Error ? err.message : String(err),
+    });
+    res.status(500).json({
+      error: {
+        code: 'INTERNAL_ERROR',
+        message: 'An unexpected error occurred while deleting the playlist.',
+        correlationId,
+      },
+    });
+  }
+});
+
 export default router;

@@ -64,20 +64,22 @@ export async function generate(
   spotifyClient: SpotifyClient,
   tokenCtx: SpotifyTokenContext,
   correlationId: string,
+  forceRefresh: boolean = false,
 ): Promise<GenerationResult> {
   const startTime = Date.now();
   const cacheKey = computeCacheKey(spotifyUserId, playlistIds);
 
   // ── Check cache ────────────────────────────────────────────────────────────
-  logger.info('Checking generation cache', {
-    correlationId,
-    spotifyUserId,
-    step: 'CACHE_CHECK',
-  });
+  if (!forceRefresh) {
+    logger.info('Checking generation cache', {
+      correlationId,
+      spotifyUserId,
+      step: 'CACHE_CHECK',
+    });
 
-  const cachedDoc = await getGenerationByHash(spotifyUserId, cacheKey);
+    const cachedDoc = await getGenerationByHash(spotifyUserId, cacheKey);
 
-  if (cachedDoc && !isStale(cachedDoc)) {
+    if (cachedDoc && !isStale(cachedDoc)) {
     logger.info('Cache hit — returning cached generation result', {
       correlationId,
       spotifyUserId,
@@ -91,6 +93,13 @@ export async function generate(
       partialWarning: cachedDoc.partialWarning,
       cached: true,
     };
+  }
+  } else {
+    logger.info('Force refresh requested, skipping cache', {
+      correlationId,
+      spotifyUserId,
+      step: 'CACHE_SKIP',
+    });
   }
 
   // ── Cache miss — run the full pipeline ─────────────────────────────────────

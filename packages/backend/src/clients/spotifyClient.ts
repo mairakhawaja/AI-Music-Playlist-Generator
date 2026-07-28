@@ -39,6 +39,7 @@ export interface SpotifyTrack {
   name: string;
   uri: string;
   duration_ms: number;
+  preview_url: string | null;
   external_urls: { spotify: string };
   artists: Array<{ id: string; name: string }>;
   album: {
@@ -673,6 +674,27 @@ export class SpotifyClient {
         correlationId,
       );
     }
+  }
+
+  /**
+   * Unfollows (deletes) a playlist from the authenticated user's account.
+   * Maps to `DELETE /me/library` with the playlist URI (Feb 2026 API).
+   * For user-owned playlists, unfollowing effectively deletes them.
+   */
+  async unfollowPlaylist(
+    playlistId: string,
+    tokenCtx: SpotifyTokenContext,
+    correlationId?: string,
+  ): Promise<void> {
+    await this.request<void>(
+      {
+        method: 'DELETE',
+        url: '/me/library',
+        data: { uris: [`spotify:playlist:${playlistId}`] },
+      },
+      tokenCtx,
+      correlationId,
+    );
   }
 }
 
