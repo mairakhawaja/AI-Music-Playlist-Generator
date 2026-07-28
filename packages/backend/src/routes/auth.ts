@@ -188,7 +188,7 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
         path: '/',
         maxAge: SESSION_COOKIE_MAX_AGE,
       });
-      res.json({ displayName: cached.displayName });
+      res.json({ displayName: cached.displayName, token: cached.token });
       return;
     }
 
@@ -287,7 +287,7 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
     res.cookie(SESSION_COOKIE_NAME, token, {
       httpOnly: true,
       secure: true,
-      sameSite: 'lax',
+      sameSite: 'none',
       path: '/',
       maxAge: SESSION_COOKIE_MAX_AGE,
     });
@@ -302,7 +302,7 @@ router.get('/callback', async (req: Request, res: Response): Promise<void> => {
     recentCallbacks.set(state, { displayName, token });
     setTimeout(() => recentCallbacks.delete(state), 60_000);
 
-    res.json({ displayName });
+    res.json({ displayName, token });
   } catch (err) {
     if (err instanceof AuthError) {
       res.status(err.statusCode).json({
@@ -331,7 +331,7 @@ router.post('/logout', (_req: Request, res: Response): void => {
   res.clearCookie(SESSION_COOKIE_NAME, {
     httpOnly: true,
     secure: true,
-    sameSite: 'lax',
+    sameSite: 'none',
     path: '/',
   });
 

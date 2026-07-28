@@ -32,9 +32,13 @@ export function AuthCallback() {
 
     const exchangeCode = async () => {
       try {
-        await apiClient.get("/auth/callback", {
+        const response = await apiClient.get("/auth/callback", {
           params: { code, state },
         });
+        // Store the JWT token for cross-origin auth
+        if (response.data?.token) {
+          localStorage.setItem("session_token", response.data.token);
+        }
         await checkAuth();
         navigate("/generate", { replace: true });
       } catch (err: unknown) {

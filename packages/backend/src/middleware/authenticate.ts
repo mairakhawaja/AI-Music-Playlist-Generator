@@ -35,8 +35,11 @@ declare global {
 export function authenticate(req: Request, res: Response, next: NextFunction): void {
   const correlationId = (res.locals['correlationId'] as string | undefined) ?? 'unknown';
 
-  // Extract the JWT from the `session` HttpOnly cookie.
-  const token: string | undefined = req.cookies?.['session'];
+  // Extract the JWT from the `session` HttpOnly cookie or Authorization header.
+  const cookieToken: string | undefined = req.cookies?.['session'];
+  const authHeader = req.headers['authorization'];
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : undefined;
+  const token = cookieToken || bearerToken;
 
   if (!token) {
     res.status(401).json({

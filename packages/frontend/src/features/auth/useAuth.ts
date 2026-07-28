@@ -52,6 +52,7 @@ export const useAuth = create<AuthState>((set) => ({
 
   logout: async () => {
     await apiLogout();
+    localStorage.removeItem("session_token");
     set({
       spotifyUserId: null,
       displayName: null,
