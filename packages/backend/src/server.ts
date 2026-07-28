@@ -42,6 +42,20 @@ function createApp(): express.Application {
   // Parse cookies (needed for session JWT in HttpOnly cookie)
   app.use(cookieParser());
 
+  // CORS — allow frontend origin to call the backend in production
+  const frontendUrl = process.env['FRONTEND_URL'] ?? 'https://127.0.0.1:5173';
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', frontendUrl);
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Correlation-ID');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(204);
+      return;
+    }
+    next();
+  });
+
   // Attach a UUID v4 correlation ID to every request and response header
   app.use(correlationIdMiddleware);
 
