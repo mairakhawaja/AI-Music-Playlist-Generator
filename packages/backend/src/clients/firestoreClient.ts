@@ -332,7 +332,6 @@ export async function getGenerationByHash(
     .doc(spotifyUserId)
     .collection('generations')
     .where('cacheKey', '==', cacheKey)
-    .orderBy('createdAt', 'desc')
     .limit(1)
     .get();
 
