@@ -119,7 +119,7 @@ export async function requestRecommendations(
   let response: Anthropic.Message;
   try {
     response = await client.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-sonnet-5',
       max_tokens: 4096,
       system: SYSTEM_PROMPT,
       tools: [RECOMMEND_TRACKS_TOOL],

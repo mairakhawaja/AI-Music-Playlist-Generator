@@ -105,6 +105,14 @@ router.post('/', authenticate, async (req: Request, res: Response): Promise<void
       durationMs: Date.now() - requestStart,
     });
 
+    console.log('[DEBUG] Generation result:', JSON.stringify({
+      generationId: result.generationId,
+      trackCount: result.tracks.length,
+      partialWarning: result.partialWarning,
+      cached: result.cached,
+      firstTrack: result.tracks[0] ?? null,
+    }, null, 2));
+
     res.json(result);
   } catch (err) {
     if (err instanceof AppError) {

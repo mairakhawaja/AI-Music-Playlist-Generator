@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, ErrorBanner } from "../../components/ui";
 import { savePlaylist } from "./playlistApi";
-import { useTrackSelectionStore, selectIncludedUris } from "./trackSelectionStore";
+import { useIncludedUris } from "./trackSelectionStore";
 import "./SavePlaylistForm.css";
 
 export interface SavePlaylistFormProps {
@@ -14,7 +14,7 @@ function getDefaultPlaylistName(): string {
 }
 
 export function SavePlaylistForm({ generationId }: SavePlaylistFormProps) {
-  const includedUris = useTrackSelectionStore(selectIncludedUris);
+  const includedUris = useIncludedUris();
   const [playlistName, setPlaylistName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{

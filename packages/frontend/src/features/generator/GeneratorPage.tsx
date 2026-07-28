@@ -4,10 +4,12 @@ import { ErrorBanner } from "../../components/ui";
 import { PlaylistSelector } from "./PlaylistSelector";
 import { GenerateButton } from "./GenerateButton";
 import { generate } from "./generatorApi";
+import { useTrackSelectionStore } from "../playlist/trackSelectionStore";
 import "./GeneratorPage.css";
 
 export function GeneratorPage() {
   const navigate = useNavigate();
+  const setGenerationResult = useTrackSelectionStore((s) => s.setGenerationResult);
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<{
@@ -27,7 +29,8 @@ export function GeneratorPage() {
 
     try {
       const result = await generate(selectedIds);
-      navigate("/results", { state: result });
+      setGenerationResult(result);
+      navigate("/results");
     } catch (err: unknown) {
       const correlationId =
         err &&

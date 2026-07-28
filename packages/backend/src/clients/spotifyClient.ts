@@ -27,8 +27,8 @@ import type { SpotifyTimeRange } from '../lib/types.js';
 export interface SpotifyArtist {
   id: string;
   name: string;
-  genres: string[];
-  popularity: number;
+  genres?: string[];
+  popularity?: number;
   external_urls: { spotify: string };
   images: Array<{ url: string; width: number; height: number }>;
 }
@@ -72,9 +72,10 @@ export interface SpotifyRecentlyPlayedResponse {
   limit: number;
 }
 
-/** A track item inside a playlist tracks response. */
+/** A track/item inside a playlist items response (Feb 2026: tracks→items rename). */
 export interface SpotifyPlaylistTrackObject {
   track: SpotifyTrack | null;
+  item?: SpotifyTrack | null;
   added_at: string;
 }
 
@@ -83,11 +84,12 @@ export interface SpotifyPlaylistObject {
   id: string;
   name: string;
   images: Array<{ url: string; width: number; height: number }> | null;
-  tracks: { total: number };
+  tracks?: { total: number };
+  items?: { total: number };
   external_urls: { spotify: string };
 }
 
-/** Response from POST /users/{userId}/playlists. */
+/** Response from POST /me/playlists. */
 export interface SpotifyCreatedPlaylist {
   id: string;
   name: string;
@@ -97,11 +99,6 @@ export interface SpotifyCreatedPlaylist {
 /** Response from GET /search?type=track */
 export interface SpotifySearchTracksResponse {
   tracks: SpotifyPagingObject<SpotifyTrack>;
-}
-
-/** Response from GET /artists?ids=... */
-export interface SpotifyArtistsResponse {
-  artists: SpotifyArtist[];
 }
 
 // ---------------------------------------------------------------------------
@@ -137,14 +134,20 @@ export type RefreshTokenFn = (encryptedRefreshToken: string) => Promise<string>;
 
 const SPOTIFY_API_BASE_URL = 'https://api.spotify.com/v1';
 
-/** Maximum number of artist IDs accepted by GET /artists in one call. */
-const MAX_ARTIST_IDS_PER_REQUEST = 50;
-
-/** Maximum number of track URIs accepted by POST /playlists/{id}/tracks in one call. */
+/** Maximum number of track URIs accepted by POST /playlists/{id}/items in one call. */
 const MAX_URIS_PER_ADD_TRACKS_REQUEST = 100;
 
 /** Maximum items to request per page for list endpoints. */
 const DEFAULT_PAGE_LIMIT = 50;
+
+/**
+ * Concurrency limit for individual artist fetches.
+ * Balanced to avoid Spotify rate limiting while keeping generation fast.
+ */
+const ARTIST_FETCH_CONCURRENCY = 5;
+
+/** Delay between artist fetch batches to avoid 429 rate limiting (ms). */
+const ARTIST_FETCH_BATCH_DELAY_MS = 100;
 
 // ---------------------------------------------------------------------------
 // SpotifyClient class
@@ -299,6 +302,17 @@ export class SpotifyClient {
           const retryAfterSeconds = retryAfterHeader
             ? parseInt(String(retryAfterHeader), 10)
             : 1;
+
+          // Cap retry delay at 5 seconds — if Spotify demands longer, fail fast
+          const MAX_RETRY_WAIT_SECONDS = 5;
+          if (retryAfterSeconds > MAX_RETRY_WAIT_SECONDS) {
+            logger.warn(`Spotify 429 with Retry-After ${retryAfterSeconds}s (exceeds cap), failing fast`, {
+              correlationId,
+              step: 'SPOTIFY_RATE_LIMIT',
+            });
+            break;
+          }
+
           const sleepMs = (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0)
             ? retryAfterSeconds * 1000
             : 1000;
@@ -333,6 +347,11 @@ export class SpotifyClient {
 
     // All retries exhausted or non-retryable error — throw SpotifyApiError.
     if (isAxiosError(lastError) && lastError.response) {
+      // Log the full Spotify error payload for debugging
+      console.error('[SPOTIFY DEBUG] Status:', lastError.response.status,
+        'URL:', lastError.config?.url,
+        'Response:', JSON.stringify(lastError.response.data));
+
       throw new SpotifyApiError(
         `SPOTIFY_${lastError.response.status}`,
         `Spotify API returned ${lastError.response.status}: ${lastError.message}`,
@@ -353,7 +372,7 @@ export class SpotifyClient {
 
   /**
    * Fetches the authenticated user's top tracks for the given time range.
-   * Maps to `GET /me/top/tracks?time_range={range}&limit=50`.
+   * Maps to `GET /me/top/tracks?time_range={range}&limit=20`.
    *
    * Requirements: 2.1
    */
@@ -366,7 +385,7 @@ export class SpotifyClient {
       {
         method: 'GET',
         url: '/me/top/tracks',
-        params: { time_range: range, limit: DEFAULT_PAGE_LIMIT },
+        params: { time_range: range, limit: 20 },
       },
       tokenCtx,
       correlationId,
@@ -375,7 +394,7 @@ export class SpotifyClient {
 
   /**
    * Fetches the authenticated user's top artists for the given time range.
-   * Maps to `GET /me/top/artists?time_range={range}&limit=50`.
+   * Maps to `GET /me/top/artists?time_range={range}&limit=20`.
    *
    * Requirements: 2.2
    */
@@ -388,7 +407,7 @@ export class SpotifyClient {
       {
         method: 'GET',
         url: '/me/top/artists',
-        params: { time_range: range, limit: DEFAULT_PAGE_LIMIT },
+        params: { time_range: range, limit: 20 },
       },
       tokenCtx,
       correlationId,
@@ -397,7 +416,7 @@ export class SpotifyClient {
 
   /**
    * Fetches the authenticated user's recently played tracks.
-   * Maps to `GET /me/player/recently-played?limit=50`.
+   * Maps to `GET /me/player/recently-played?limit=20`.
    *
    * Requirements: 2.3
    */
@@ -409,7 +428,7 @@ export class SpotifyClient {
       {
         method: 'GET',
         url: '/me/player/recently-played',
-        params: { limit: DEFAULT_PAGE_LIMIT },
+        params: { limit: 20 },
       },
       tokenCtx,
       correlationId,
@@ -417,11 +436,11 @@ export class SpotifyClient {
   }
 
   /**
-   * Fetches all tracks from a single Spotify playlist.
-   * Maps to `GET /playlists/{id}/tracks?limit=50`.
+   * Fetches tracks from a single Spotify playlist (up to 100 tracks max).
+   * Maps to `GET /playlists/{id}/items` (Feb 2026 rename from /tracks).
    *
-   * Automatically follows Spotify's cursor-based pagination to return the
-   * full track list for playlists with more than 50 tracks.
+   * Caps at 100 tracks per playlist to avoid excessive API calls during
+   * generation — we only need a representative sample for taste profiling.
    *
    * Requirements: 2.4
    */
@@ -431,9 +450,10 @@ export class SpotifyClient {
     correlationId?: string,
   ): Promise<SpotifyPlaylistTrackObject[]> {
     const allItems: SpotifyPlaylistTrackObject[] = [];
-    let url: string | null = `/playlists/${encodeURIComponent(playlistId)}/tracks`;
+    let url: string | null = `/playlists/${encodeURIComponent(playlistId)}/items`;
+    const maxTracks = 100;
 
-    while (url !== null) {
+    while (url !== null && allItems.length < maxTracks) {
       const page: SpotifyPagingObject<SpotifyPlaylistTrackObject> =
         await this.request<SpotifyPagingObject<SpotifyPlaylistTrackObject>>(
         {
@@ -447,16 +467,24 @@ export class SpotifyClient {
         correlationId,
       );
 
-      allItems.push(...page.items);
+      // Normalize: Feb 2026 API returns `item` instead of `track`
+      const normalized = page.items.map((entry) => ({
+        ...entry,
+        track: entry.track ?? entry.item ?? null,
+        added_at: entry.added_at,
+      }));
+
+      allItems.push(...normalized);
       url = page.next;
     }
 
-    return allItems;
+    return allItems.slice(0, maxTracks);
   }
 
   /**
    * Fetches full artist objects (including genres) for the given IDs.
-   * Maps to `GET /artists?ids={ids}`, batching up to 50 IDs per request.
+   * Uses individual `GET /artists/{id}` requests (Feb 2026: batch endpoint removed).
+   * Fetches in small concurrent batches with delays to avoid rate limiting.
    *
    * Requirements: 2.5
    */
@@ -469,21 +497,38 @@ export class SpotifyClient {
       return [];
     }
 
+    // Cap the number of artists we fetch to avoid excessive API calls.
+    // The taste profile only needs top genre data, so 20 artists is plenty.
+    const cappedIds = ids.slice(0, 20);
     const results: SpotifyArtist[] = [];
 
-    // Batch into chunks of MAX_ARTIST_IDS_PER_REQUEST (Spotify limit: 50).
-    for (let i = 0; i < ids.length; i += MAX_ARTIST_IDS_PER_REQUEST) {
-      const batch = ids.slice(i, i + MAX_ARTIST_IDS_PER_REQUEST);
-      const response = await this.request<SpotifyArtistsResponse>(
-        {
-          method: 'GET',
-          url: '/artists',
-          params: { ids: batch.join(',') },
-        },
-        tokenCtx,
-        correlationId,
+    // Fetch in small concurrent batches with delay between batches
+    for (let i = 0; i < cappedIds.length; i += ARTIST_FETCH_CONCURRENCY) {
+      const batch = cappedIds.slice(i, i + ARTIST_FETCH_CONCURRENCY);
+      const batchResults = await Promise.allSettled(
+        batch.map((id) =>
+          this.request<SpotifyArtist>(
+            {
+              method: 'GET',
+              url: `/artists/${encodeURIComponent(id)}`,
+            },
+            tokenCtx,
+            correlationId,
+          ),
+        ),
       );
-      results.push(...response.artists);
+
+      for (const result of batchResults) {
+        if (result.status === 'fulfilled' && result.value && result.value.id) {
+          results.push(result.value);
+        }
+        // Skip failed individual fetches gracefully — missing artist won't block pipeline
+      }
+
+      // Pause between batches to avoid 429 rate limiting
+      if (i + ARTIST_FETCH_CONCURRENCY < cappedIds.length) {
+        await this.sleep(ARTIST_FETCH_BATCH_DELAY_MS);
+      }
     }
 
     return results;
@@ -518,8 +563,9 @@ export class SpotifyClient {
   /**
    * Checks whether the authenticated user has the given track IDs saved in
    * their library.
-   * Maps to `GET /me/tracks/contains?ids={ids}`.
+   * Maps to `GET /me/library/contains?uris={uris}` (Feb 2026: replaces /me/tracks/contains).
    *
+   * Accepts track IDs and converts them to Spotify URIs internally.
    * Returns a boolean array parallel to `ids`.
    */
   async checkLibrary(
@@ -531,11 +577,14 @@ export class SpotifyClient {
       return [];
     }
 
+    // Convert plain IDs to Spotify track URIs as required by the new endpoint
+    const uris = ids.map((id) => `spotify:track:${id}`);
+
     return this.request<boolean[]>(
       {
         method: 'GET',
-        url: '/me/tracks/contains',
-        params: { ids: ids.join(',') },
+        url: '/me/library/contains',
+        params: { uris: uris.join(',') },
       },
       tokenCtx,
       correlationId,
@@ -569,12 +618,12 @@ export class SpotifyClient {
 
   /**
    * Creates a new private playlist in the authenticated user's account.
-   * Maps to `POST /users/{userId}/playlists`.
+   * Maps to `POST /me/playlists` (Feb 2026: replaces POST /users/{userId}/playlists).
    *
    * Requirements: 7.1
    */
   async createPlaylist(
-    userId: string,
+    _userId: string,
     name: string,
     tokenCtx: SpotifyTokenContext,
     correlationId?: string,
@@ -582,7 +631,7 @@ export class SpotifyClient {
     return this.request<SpotifyCreatedPlaylist>(
       {
         method: 'POST',
-        url: `/users/${encodeURIComponent(userId)}/playlists`,
+        url: '/me/playlists',
         data: {
           name,
           public: false,
@@ -596,7 +645,8 @@ export class SpotifyClient {
 
   /**
    * Adds tracks to an existing Spotify playlist.
-   * Maps to `POST /playlists/{id}/tracks`, batching up to 100 URIs per call.
+   * Maps to `POST /playlists/{id}/items` (Feb 2026: renamed from /tracks),
+   * batching up to 100 URIs per call.
    *
    * Requirements: 7.2
    */
@@ -616,7 +666,7 @@ export class SpotifyClient {
       await this.request<{ snapshot_id: string }>(
         {
           method: 'POST',
-          url: `/playlists/${encodeURIComponent(playlistId)}/tracks`,
+          url: `/playlists/${encodeURIComponent(playlistId)}/items`,
           data: { uris: batch },
         },
         tokenCtx,
