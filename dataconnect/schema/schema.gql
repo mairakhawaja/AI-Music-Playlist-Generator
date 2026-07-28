@@ -1,0 +1,35 @@
+type User @table {
+  username: String!
+  email: String!
+  preferredGenres: [String]
+  createdAt: Timestamp
+}
+
+type Track @table {
+  title: String!
+  artist: String!
+  genre: String!
+  duration: Int
+  albumTitle: String
+}
+
+type Playlist @table {
+  name: String!
+  promptUsed: String!
+  createdAt: Timestamp!
+  description: String
+  isPublic: Boolean
+  user: User!
+}
+
+type PlaylistTrack @table {
+  playlist: Playlist!
+  track: Track!
+  rating: String
+}
+
+type GenerationLog @table {
+  prompt: String!
+  timestamp: Timestamp!
+  user: User!
+}
