@@ -32,7 +32,7 @@ export function TrackCard({ track, included, onToggle, style }: TrackCardProps) 
           aria-label={showEmbed ? `Hide player for ${track.title}` : `Preview ${track.title}`}
           type="button"
         >
-          {showEmbed ? "✕" : "▶"}
+          {showEmbed ? "✕ Close" : "▶ Preview"}
         </button>
       </div>
 
